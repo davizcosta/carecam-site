@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CARE-CAM Enterprise | Plataforma Ergonômica NR-17</title>
+    <title>CARE-CAM Enterprise | Monitoramento Ergonômico NR-17</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -30,11 +30,11 @@
         ::-webkit-scrollbar-thumb:hover { background: #8ECAE6; }
         
         .glow-bg {
-            background: radial-gradient(circle at 50% 50%, rgba(142, 202, 230, 0.08) 0%, rgba(8, 9, 12, 0) 75%);
+            background: radial-gradient(circle at 50% 50%, rgba(142, 202, 230, 0.12) 0%, rgba(8, 9, 12, 0) 70%);
         }
         .grid-pattern {
             background-image: radial-gradient(rgba(142, 202, 230, 0.08) 1px, transparent 1px);
-            background-size: 24px 24px;
+            background-size: 28px 28px;
         }
     </style>
 </head>
@@ -46,7 +46,7 @@
         <span id="toast-message" class="text-xs font-mono">Mensagem do sistema</span>
     </div>
 
-    <!-- Header Principal -->
+    <!-- Header Fixo -->
     <header class="fixed top-0 left-0 w-full z-40 backdrop-blur-xl bg-bgDark/85 border-b border-slate-800/80 px-6 md:px-12 py-4 flex justify-between items-center">
         <div class="flex items-center gap-4">
             <div class="flex items-center gap-2">
@@ -60,7 +60,7 @@
 
         <nav class="hidden lg:flex gap-8 text-[11px] font-mono tracking-widest text-slate-400">
             <a href="#inicio" class="hover:text-babyBlue transition-colors">01. INÍCIO</a>
-            <a href="#tecnologia" class="hover:text-babyBlue transition-colors">02. VISÃO COMPUTACIONAL</a>
+            <a href="#tecnologia" class="hover:text-babyBlue transition-colors">02. TECNOLOGIA</a>
             <a href="#auditoria" class="hover:text-babyBlue transition-colors">03. AUDITORIA NR-17</a>
             <a href="#equipe" class="hover:text-babyBlue transition-colors">04. EQUIPE CEAP</a>
         </nav>
@@ -90,11 +90,10 @@
                 </button>
             </div>
 
-            <!-- Login -->
             <form id="form-login" onsubmit="launchDashboard(event)" class="space-y-4">
                 <div>
                     <label class="block text-[10px] font-mono text-slate-400 mb-1 uppercase">Credencial Institucional / Empresa</label>
-                    <input type="email" required value="email@exemplo.com" class="w-full bg-bgDark border border-cardBorder rounded-lg px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-babyBlue transition-all font-mono">
+                    <input type="email" required value="ergonomia@ceap.org.br" class="w-full bg-bgDark border border-cardBorder rounded-lg px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-babyBlue transition-all font-mono">
                 </div>
                 <div>
                     <label class="block text-[10px] font-mono text-slate-400 mb-1 uppercase">Chave de Segurança</label>
@@ -105,11 +104,10 @@
                 </button>
             </form>
 
-            <!-- Registro -->
             <form id="form-register" onsubmit="handleRegister(event)" class="space-y-4 hidden">
                 <div>
                     <label class="block text-[10px] font-mono text-slate-400 mb-1 uppercase">Nome Completo</label>
-                    <input type="text" required placeholder="Seu nome" class="w-full bg-bgDark border border-cardBorder rounded-lg px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-babyBlue transition-all">
+                    <input type="text" required placeholder="Davi Barbosa Costa" class="w-full bg-bgDark border border-cardBorder rounded-lg px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-babyBlue transition-all">
                 </div>
                 <div>
                     <label class="block text-[10px] font-mono text-slate-400 mb-1 uppercase">E-mail Corporativo</label>
@@ -126,10 +124,8 @@
         </div>
     </div>
 
-    <!-- PAINEL RESTRITO DO SISTEMA (Aparece ao Logar) -->
+    <!-- PAINEL RESTRITO DO SISTEMA -->
     <div id="dashboard-app" class="fixed inset-0 z-50 bg-bgDark opacity-0 pointer-events-none transition-all duration-500 flex flex-col overflow-y-auto">
-        
-        <!-- Header Interno -->
         <div class="border-b border-cardBorder bg-cardDark/90 backdrop-blur-md px-6 py-4 flex justify-between items-center sticky top-0 z-30">
             <div class="flex items-center gap-4">
                 <div class="flex items-center gap-2">
@@ -149,16 +145,12 @@
             </div>
         </div>
 
-        <!-- Área de Controle do Operador -->
         <div class="p-6 md:p-10 max-w-7xl mx-auto w-full space-y-8">
-            
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-6">
                 <div>
                     <h1 class="text-2xl md:text-3xl font-black text-white">Painel do Ergonomista em Tempo Real</h1>
                     <p class="text-xs font-mono text-slate-400 mt-1">Monitoramento de conformidade NR-17 por câmeras em rede</p>
                 </div>
-                
-                <!-- Seleção de Sala / Câmera -->
                 <div class="flex items-center gap-3">
                     <span class="text-xs font-mono text-slate-400">UNIDADE:</span>
                     <select id="room-selector" onchange="changeRoom(this.value)" class="bg-cardDark border border-cardBorder text-babyBlue text-xs font-mono px-4 py-2 rounded-xl focus:outline-none focus:border-babyBlue">
@@ -169,7 +161,6 @@
                 </div>
             </div>
 
-            <!-- Grid de KPIs -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-cardDark border border-cardBorder p-5 rounded-2xl">
                     <span class="text-slate-500 font-mono text-[10px] block mb-1">DISPOSITIVOS RASTREADOS</span>
@@ -193,9 +184,7 @@
                 </div>
             </div>
 
-            <!-- Feed Visual de Simulação da Câmera + Canvas de Poses -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
                 <div class="lg:col-span-2 bg-cardDark border border-cardBorder p-5 rounded-2xl flex flex-col justify-between">
                     <div class="flex justify-between items-center mb-4">
                         <span class="text-xs font-mono text-babyBlue font-bold flex items-center gap-2">
@@ -205,11 +194,9 @@
                         <span class="text-[10px] font-mono text-slate-500">RES: 640x480 • CPU MODE</span>
                     </div>
 
-                    <!-- Canvas de Renderização da Visão Computacional -->
                     <div class="relative w-full h-72 md:h-96 bg-bgDark rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center">
                         <canvas id="cv-canvas" class="w-full h-full object-cover"></canvas>
                         
-                        <!-- Overlay de Telemetria sobre o Vídeo -->
                         <div class="absolute top-4 left-4 bg-black/70 backdrop-blur-md p-3 rounded-lg border border-slate-700 text-[10px] font-mono space-y-1">
                             <div class="text-babyBlue font-bold">ALGORITMO: CARE-CAM Engine v2.4</div>
                             <div>OPERADOR RASTREADO: <span class="text-white">OP-001</span></div>
@@ -222,7 +209,6 @@
                         </div>
                     </div>
 
-                    <!-- Botões de Teste da Câmera -->
                     <div class="flex flex-wrap gap-3 mt-4">
                         <button onclick="setSimulatedPosture('good')" class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500 hover:text-bgDark font-mono text-xs px-4 py-2 rounded-lg transition-all font-bold">
                             Simular Postura Adequada
@@ -236,7 +222,6 @@
                     </div>
                 </div>
 
-                <!-- Histórico e Logs em Tempo Real -->
                 <div class="bg-cardDark border border-cardBorder p-5 rounded-2xl flex flex-col justify-between">
                     <div>
                         <h3 class="text-sm font-mono text-white font-bold mb-4 flex items-center justify-between border-b border-slate-800 pb-3">
@@ -261,13 +246,11 @@
                         </button>
                     </div>
                 </div>
-
             </div>
-
         </div>
     </div>
 
-    <!-- Layout de Scrollytelling Público (Página Principal) -->
+    <!-- Layout de Scrollytelling Público -->
     <div class="relative w-full">
         
         <!-- Canvas 3D Fixo no Lado Direito -->
@@ -351,7 +334,7 @@
                 </div>
             </section>
 
-            <!-- SEÇÃO 4: Rodapé e Créditos Institucionais -->
+            <!-- SEÇÃO 4: Rodapé e Créditos -->
             <section id="equipe" class="min-h-screen flex flex-col justify-center py-20">
                 <span class="text-babyBlue text-xs font-mono uppercase tracking-widest mb-3">04 / Desenvolvimento & Ficha Técnica</span>
                 <h2 class="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight">34ª FeCEAP — 2026</h2>
@@ -383,9 +366,8 @@
         </div>
     </div>
 
-    <!-- Script Principal (Lógica de App + Canvas + Three.js) -->
+    <!-- Script de Lógica e Renderizador 3D Avançado -->
     <script>
-        // --- GERENCIAMENTO DA MODAL ---
         function openAuthModal(tab) {
             const modal = document.getElementById('auth-modal');
             const modalBox = document.getElementById('modal-box');
@@ -439,7 +421,6 @@
             }, 3500);
         }
 
-        // --- DASHBOARD DA APLICAÇÃO ---
         function launchDashboard(e) {
             if (e) e.preventDefault();
             closeAuthModal();
@@ -508,7 +489,6 @@
             document.getElementById('log-container').innerHTML = '<div class="p-2 bg-bgDark rounded border border-slate-800 text-slate-500">Logs limpos pelo operador.</div>';
         }
 
-        // --- CANVAS DE VISÃO COMPUTACIONAL SIMULADA ---
         function initCVCanvas() {
             const canvas = document.getElementById('cv-canvas');
             if (!canvas) return;
@@ -522,7 +502,6 @@
                 ctx.fillStyle = '#08090C';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                // Grid do Sensor
                 ctx.strokeStyle = 'rgba(142, 202, 230, 0.08)';
                 ctx.lineWidth = 1;
                 for (let x = 0; x < canvas.width; x += 40) {
@@ -532,25 +511,22 @@
                     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
                 }
 
-                // Esqueleto Humano Simulado (YOLOv8 Pose)
                 const headX = 320 + Math.sin(tick) * 10;
                 const headY = 140;
 
                 ctx.strokeStyle = '#8ECAE6';
                 ctx.lineWidth = 3;
 
-                // Conexões de articulações
                 ctx.beginPath();
-                ctx.moveTo(headX, headY); // Cabeça
-                ctx.lineTo(headX, headY + 80); // Pescoço ao Tronco
-                ctx.lineTo(headX - 60, headY + 100); // Ombro Esq
+                ctx.moveTo(headX, headY);
+                ctx.lineTo(headX, headY + 80);
+                ctx.lineTo(headX - 60, headY + 100);
                 ctx.moveTo(headX, headY + 80);
-                ctx.lineTo(headX + 60, headY + 100); // Ombro Dir
+                ctx.lineTo(headX + 60, headY + 100);
                 ctx.moveTo(headX, headY + 80);
-                ctx.lineTo(headX, headY + 220); // Tronco Central
+                ctx.lineTo(headX, headY + 220);
                 ctx.stroke();
 
-                // Keypoints (Articulações)
                 const points = [
                     [headX, headY], [headX, headY + 80],
                     [headX - 60, headY + 100], [headX + 60, headY + 100],
@@ -564,7 +540,6 @@
                     ctx.fill();
                 });
 
-                // Bounding Box do Operador
                 ctx.strokeStyle = 'rgba(142, 202, 230, 0.6)';
                 ctx.lineWidth = 1.5;
                 ctx.setLineDash([6, 6]);
@@ -576,89 +551,152 @@
             draw();
         }
 
-        // --- SCENE 3D THREE.JS DA LANDING PAGE ---
+        // ==========================================
+        // MOTOR 3D REVOLUCIONADO (CYBER SENSOR UNIT)
+        // ==========================================
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
 
         const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-        camera.position.z = 7;
+        camera.position.z = 7.5;
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(container.clientWidth, container.clientHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         container.appendChild(renderer.domElement);
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        // Iluminação de Estúdio Tech
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
         scene.add(ambientLight);
 
-        const pointLight = new THREE.PointLight(0x8ECAE6, 5, 15);
-        pointLight.position.set(4, 4, 6);
-        scene.add(pointLight);
+        const pointLight1 = new THREE.PointLight(0x8ECAE6, 6, 20);
+        pointLight1.position.set(5, 5, 8);
+        scene.add(pointLight1);
 
+        const pointLight2 = new THREE.PointLight(0xA0C4FF, 3, 15);
+        pointLight2.position.set(-5, -5, -4);
+        scene.add(pointLight2);
+
+        // Grupo Principal
         const mainGroup = new THREE.Group();
         scene.add(mainGroup);
 
-        const cameraBodyGeo = new THREE.BoxGeometry(2.2, 1.3, 0.9);
-        const cameraBodyMat = new THREE.MeshStandardMaterial({
+        // 1. Corpo Cilíndrico da Câmera (Chassi de Alumínio Escuro)
+        const chassisGeo = new THREE.CylinderGeometry(1.4, 1.4, 1.2, 64);
+        const chassisMat = new THREE.MeshStandardMaterial({
             color: 0x0D0F17,
+            metalness: 0.95,
+            roughness: 0.15,
+        });
+        const chassis = new THREE.Mesh(chassisGeo, chassisMat);
+        chassis.rotation.x = Math.PI / 2;
+        mainGroup.add(chassis);
+
+        // 2. Anel de Acabamento com Borda chanfrada
+        const rimGeo = new THREE.TorusGeometry(1.42, 0.08, 16, 100);
+        const rimMat = new THREE.MeshStandardMaterial({
+            color: 0x1E2638,
             metalness: 0.9,
             roughness: 0.2
         });
-        const cameraBody = new THREE.Mesh(cameraBodyGeo, cameraBodyMat);
-        mainGroup.add(cameraBody);
+        const rim = new THREE.Mesh(rimGeo, rimMat);
+        mainGroup.add(rim);
 
-        const lensGeo = new THREE.CylinderGeometry(0.55, 0.55, 0.5, 32);
-        const lensMat = new THREE.MeshStandardMaterial({
+        // 3. Lente Interna Própria (Efeito Vidro Translúcido)
+        const glassGeo = new THREE.SphereGeometry(1.0, 32, 32);
+        const glassMat = new THREE.MeshPhysicalMaterial({
             color: 0x8ECAE6,
             emissive: 0x8ECAE6,
-            emissiveIntensity: 0.6,
-            roughness: 0.1
+            emissiveIntensity: 0.4,
+            transmission: 0.6,
+            opacity: 0.85,
+            transparent: true,
+            roughness: 0.05,
+            ior: 1.5
         });
-        const lens = new THREE.Mesh(lensGeo, lensMat);
-        lens.rotation.x = Math.PI / 2;
-        lens.position.z = 0.55;
-        mainGroup.add(lens);
+        const glassLens = new THREE.Mesh(glassGeo, glassMat);
+        glassLens.position.z = 0.3;
+        mainGroup.add(glassLens);
 
-        const keypointsGroup = new THREE.Group();
-        const keypointGeo = new THREE.SphereGeometry(0.08, 16, 16);
-        const keypointMat = new THREE.MeshBasicMaterial({ color: 0x8ECAE6 });
+        // 4. Núcleo Laser do Sensor (Glowing Baby Blue)
+        const coreGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.7, 32);
+        const coreMat = new THREE.MeshBasicMaterial({ color: 0x8ECAE6 });
+        const core = new THREE.Mesh(coreGeo, coreMat);
+        core.rotation.x = Math.PI / 2;
+        core.position.z = 0.5;
+        mainGroup.add(core);
 
-        const positions = [
-            [-1.8, 1.2, 0], [1.8, 1.2, 0],
-            [-1.2, -1.2, 0], [1.2, -1.2, 0],
-            [0, 1.8, 0.5], [0, -1.8, -0.5]
+        // 5. HUD Cibernético Orbitante 1 (Anel Interno)
+        const ring1Geo = new THREE.TorusGeometry(2.0, 0.02, 16, 100);
+        const ring1Mat = new THREE.MeshBasicMaterial({ color: 0x8ECAE6, wireframe: true });
+        const ring1 = new THREE.Mesh(ring1Geo, ring1Mat);
+        mainGroup.add(ring1);
+
+        // 6. HUD Cibernético Orbitante 2 (Anel Externo Diagonal)
+        const ring2Geo = new THREE.TorusGeometry(2.6, 0.015, 16, 100);
+        const ring2Mat = new THREE.MeshBasicMaterial({ color: 0xB8E1F4, transparent: true, opacity: 0.6 });
+        const ring2 = new THREE.Mesh(ring2Geo, ring2Mat);
+        ring2.rotation.x = Math.PI / 4;
+        mainGroup.add(ring2);
+
+        // 7. Partículas Flutuantes de Pontos Anatômicos (Pose Keypoints)
+        const particlesGroup = new THREE.Group();
+        const pGeo = new THREE.SphereGeometry(0.06, 16, 16);
+        const pMat = new THREE.MeshBasicMaterial({ color: 0x8ECAE6 });
+
+        const pCoords = [
+            [0, 2.3, 0], [0, -2.3, 0], [-2.3, 0, 0], [2.3, 0, 0],
+            [-1.6, 1.6, 0.8], [1.6, 1.6, -0.8], [-1.6, -1.6, -0.8], [1.6, -1.6, 0.8]
         ];
 
-        positions.forEach(pos => {
-            const kp = new THREE.Mesh(keypointGeo, keypointMat);
-            kp.position.set(...pos);
-            keypointsGroup.add(kp);
+        pCoords.forEach(c => {
+            const p = new THREE.Mesh(pGeo, pMat);
+            p.position.set(...c);
+            particlesGroup.add(p);
         });
-        mainGroup.add(keypointsGroup);
+        mainGroup.add(particlesGroup);
 
-        const ringGeo = new THREE.TorusGeometry(2.2, 0.015, 16, 100);
-        const ringMat = new THREE.MeshBasicMaterial({ color: 0x8ECAE6, wireframe: true });
-        const ring = new THREE.Mesh(ringGeo, ringMat);
-        mainGroup.add(ring);
+        // Rastreamento Suave da Inclinacao pelo Mouse
+        let mouseX = 0, mouseY = 0;
+        let targetX = 0, targetY = 0;
 
+        window.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth - 0.5) * 0.8;
+            mouseY = (e.clientY / window.innerHeight - 0.5) * 0.8;
+        });
+
+        // Loop de Animação Principal
         function animate() {
             requestAnimationFrame(animate);
-            ring.rotation.z += 0.003;
+
+            // Rotações contínuas sutis
+            ring1.rotation.z += 0.005;
+            ring2.rotation.z -= 0.003;
+            particlesGroup.rotation.y += 0.004;
+
+            // Interatividade fluida com o mouse (Lerp)
+            targetX += (mouseX - targetX) * 0.05;
+            targetY += (mouseY - targetY) * 0.05;
+
+            mainGroup.rotation.y = targetX;
+            mainGroup.rotation.x = targetY;
+
             renderer.render(scene, camera);
         }
         animate();
 
+        // Animação de Scrollytelling
         window.addEventListener('scroll', () => {
             const scrollY = window.scrollY;
             const maxScroll = document.body.scrollHeight - window.innerHeight;
             const progress = Math.min(Math.max(scrollY / maxScroll, 0), 1);
 
-            mainGroup.rotation.y = progress * Math.PI * 2.5;
-            mainGroup.rotation.x = progress * Math.PI * 0.4;
-
-            lens.position.z = 0.55 + progress * 1.2;
-            keypointsGroup.scale.set(1 + progress * 1.5, 1 + progress * 1.5, 1 + progress * 1.5);
-            ring.scale.set(1 + progress * 0.8, 1 + progress * 0.8, 1 + progress * 0.8);
+            // Deslocamento volumétrico das peças no scroll
+            glassLens.position.z = 0.3 + progress * 1.5;
+            core.position.z = 0.5 + progress * 1.8;
+            ring1.scale.set(1 + progress * 0.6, 1 + progress * 0.6, 1 + progress * 0.6);
+            ring2.scale.set(1 + progress * 0.9, 1 + progress * 0.9, 1 + progress * 0.9);
+            particlesGroup.scale.set(1 + progress * 1.2, 1 + progress * 1.2, 1 + progress * 1.2);
         });
 
         window.addEventListener('resize', () => {
