@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CARE-CAM Enterprise | Monitoramento Ergonômico NR-17</title>
+    <title>CARE-CAM Enterprise | Sistema de Monitoramento Ergonômico NR-17</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -30,7 +30,7 @@
         ::-webkit-scrollbar-thumb:hover { background: #8ECAE6; }
         
         .glow-bg {
-            background: radial-gradient(circle at 50% 50%, rgba(142, 202, 230, 0.12) 0%, rgba(8, 9, 12, 0) 70%);
+            background: radial-gradient(circle at 50% 50%, rgba(142, 202, 230, 0.12) 0%, rgba(8, 9, 12, 0) 75%);
         }
         .grid-pattern {
             background-image: radial-gradient(rgba(142, 202, 230, 0.08) 1px, transparent 1px);
@@ -164,7 +164,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-cardDark border border-cardBorder p-5 rounded-2xl">
                     <span class="text-slate-500 font-mono text-[10px] block mb-1">DISPOSITIVOS RASTREADOS</span>
-                    <span id="kpi-devices" class="text-2xl font-black text-white">04 Câmeras</span>
+                    <span id="kpi-devices" class="text-2xl font-black text-white">04 Câmeras PTZ</span>
                     <span class="text-emerald-400 font-mono text-[10px] block mt-1">30 FPS Estáveis (YOLOv8)</span>
                 </div>
                 <div class="bg-cardDark border border-cardBorder p-5 rounded-2xl">
@@ -189,7 +189,7 @@
                     <div class="flex justify-between items-center mb-4">
                         <span class="text-xs font-mono text-babyBlue font-bold flex items-center gap-2">
                             <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                            FEED EM TEMPO REAL — CANAL CA-01
+                            FEED EM TEMPO REAL — CÂMARA PTZ DUAL
                         </span>
                         <span class="text-[10px] font-mono text-slate-500">RES: 640x480 • CPU MODE</span>
                     </div>
@@ -276,7 +276,7 @@
                 </h1>
                 
                 <p class="text-slate-400 text-sm md:text-base max-w-md mb-8 leading-relaxed">
-                    O CARE-CAM monitora a ergonomia corporal em tempo real, eliminando a necessidade de sensores vestíveis caros e prevenindo lesões por esforço repetitivo (LER/DORT).
+                    O CARE-CAM monitora a ergonomia corporal em tempo real utilizando câmeras de segurança inteligentes PTZ de dupla lente, prevenindo lesões sem sensores corporais.
                 </p>
 
                 <div class="flex flex-wrap gap-4">
@@ -294,7 +294,7 @@
                 <span class="text-babyBlue text-xs font-mono uppercase tracking-widest mb-3">02 / Visão Computacional</span>
                 <h2 class="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight">Rastreamento de 17 Articulações</h2>
                 <p class="text-slate-400 text-sm md:text-base max-w-md mb-8 leading-relaxed">
-                    Processamento por rede neural YOLOv8 Pose rodando em modo CPU de alto desempenho, garantindo anonimato total dos operadores (caixas delimitadoras sem gravação de rostos).
+                    Processamento por rede neural YOLOv8 Pose acoplado a câmeras de segurança IP com visão noturna e iluminação infravermelha adaptativa.
                 </p>
 
                 <div class="grid gap-4 max-w-md">
@@ -366,7 +366,7 @@
         </div>
     </div>
 
-    <!-- Script de Lógica e Renderizador 3D Avançado -->
+    <!-- Script de Lógica e Renderizador 3D Ultra-Realista da Câmara PTZ -->
     <script>
         function openAuthModal(tab) {
             const modal = document.getElementById('auth-modal');
@@ -551,154 +551,247 @@
             draw();
         }
 
-        // ==========================================
-        // MOTOR 3D REVOLUCIONADO (CYBER SENSOR UNIT)
-        // ==========================================
+        // =========================================================================
+        // MOTOR 3D DUAL-LENS PTZ SECURITY CAMERA (IDÊNTICO À FOTO DE REFERÊNCIA)
+        // =========================================================================
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
 
         const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-        camera.position.z = 7.5;
+        camera.position.set(0, 0, 8.5);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(container.clientWidth, container.clientHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         container.appendChild(renderer.domElement);
 
-        // Iluminação de Estúdio Tech
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        // Iluminação Fotográfica de Estúdio Realista
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
         scene.add(ambientLight);
 
-        const pointLight1 = new THREE.PointLight(0x8ECAE6, 6, 20);
-        pointLight1.position.set(5, 5, 8);
-        scene.add(pointLight1);
+        const mainSunLight = new THREE.DirectionalLight(0xffffff, 2.5);
+        mainSunLight.position.set(6, 8, 10);
+        scene.add(mainSunLight);
 
-        const pointLight2 = new THREE.PointLight(0xA0C4FF, 3, 15);
-        pointLight2.position.set(-5, -5, -4);
-        scene.add(pointLight2);
+        const fillBlueLight = new THREE.PointLight(0x8ECAE6, 4, 15);
+        fillBlueLight.position.set(-6, -4, 5);
+        scene.add(fillBlueLight);
 
-        // Grupo Principal
-        const mainGroup = new THREE.Group();
-        scene.add(mainGroup);
-
-        // 1. Corpo Cilíndrico da Câmera (Chassi de Alumínio Escuro)
-        const chassisGeo = new THREE.CylinderGeometry(1.4, 1.4, 1.2, 64);
-        const chassisMat = new THREE.MeshStandardMaterial({
-            color: 0x0D0F17,
-            metalness: 0.95,
-            roughness: 0.15,
+        // Materiais Físicos de Alta Fidelidade (PBR)
+        const whitePlasticMat = new THREE.MeshStandardMaterial({
+            color: 0xF4F6F9,
+            roughness: 0.22,
+            metalness: 0.08
         });
-        const chassis = new THREE.Mesh(chassisGeo, chassisMat);
-        chassis.rotation.x = Math.PI / 2;
-        mainGroup.add(chassis);
 
-        // 2. Anel de Acabamento com Borda chanfrada
-        const rimGeo = new THREE.TorusGeometry(1.42, 0.08, 16, 100);
-        const rimMat = new THREE.MeshStandardMaterial({
-            color: 0x1E2638,
+        const darkHousingMat = new THREE.MeshStandardMaterial({
+            color: 0x111319,
+            roughness: 0.35,
+            metalness: 0.25
+        });
+
+        const blackFaceplateMat = new THREE.MeshStandardMaterial({
+            color: 0x08090C,
+            roughness: 0.15,
+            metalness: 0.4
+        });
+
+        const lensGlassMat = new THREE.MeshPhysicalMaterial({
+            color: 0x051329,
+            emissive: 0x001122,
+            roughness: 0.05,
             metalness: 0.9,
+            clearcoat: 1.0,
+            clearcoatRoughness: 0.1
+        });
+
+        const ledYellowEmissiveMat = new THREE.MeshStandardMaterial({
+            color: 0xFFF3C4,
+            emissive: 0xFFE082,
+            emissiveIntensity: 0.8,
             roughness: 0.2
         });
-        const rim = new THREE.Mesh(rimGeo, rimMat);
-        mainGroup.add(rim);
 
-        // 3. Lente Interna Própria (Efeito Vidro Translúcido)
-        const glassGeo = new THREE.SphereGeometry(1.0, 32, 32);
-        const glassMat = new THREE.MeshPhysicalMaterial({
+        const ledInfraredEmissiveMat = new THREE.MeshStandardMaterial({
             color: 0x8ECAE6,
             emissive: 0x8ECAE6,
-            emissiveIntensity: 0.4,
-            transmission: 0.6,
-            opacity: 0.85,
-            transparent: true,
-            roughness: 0.05,
-            ior: 1.5
+            emissiveIntensity: 0.7,
+            roughness: 0.2
         });
-        const glassLens = new THREE.Mesh(glassGeo, glassMat);
-        glassLens.position.z = 0.3;
-        mainGroup.add(glassLens);
 
-        // 4. Núcleo Laser do Sensor (Glowing Baby Blue)
-        const coreGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.7, 32);
-        const coreMat = new THREE.MeshBasicMaterial({ color: 0x8ECAE6 });
-        const core = new THREE.Mesh(coreGeo, coreMat);
-        core.rotation.x = Math.PI / 2;
-        core.position.z = 0.5;
-        mainGroup.add(core);
+        // GRUPO PRINCIPAL DA CÂMARA DE SEGURANÇA
+        const ptzCameraGroup = new THREE.Group();
+        scene.add(ptzCameraGroup);
 
-        // 5. HUD Cibernético Orbitante 1 (Anel Interno)
-        const ring1Geo = new THREE.TorusGeometry(2.0, 0.02, 16, 100);
-        const ring1Mat = new THREE.MeshBasicMaterial({ color: 0x8ECAE6, wireframe: true });
-        const ring1 = new THREE.Mesh(ring1Geo, ring1Mat);
-        mainGroup.add(ring1);
+        // 1. SUPORTE DE PAREDE / SUPORTE SUPERIOR (WHITE BRACKET)
+        const wallBracketGeo = new THREE.BoxGeometry(0.8, 1.4, 0.8);
+        const wallBracket = new THREE.Mesh(wallBracketGeo, whitePlasticMat);
+        wallBracket.position.set(0, 2.6, -1.0);
+        ptzCameraGroup.add(wallBracket);
 
-        // 6. HUD Cibernético Orbitante 2 (Anel Externo Diagonal)
-        const ring2Geo = new THREE.TorusGeometry(2.6, 0.015, 16, 100);
-        const ring2Mat = new THREE.MeshBasicMaterial({ color: 0xB8E1F4, transparent: true, opacity: 0.6 });
-        const ring2 = new THREE.Mesh(ring2Geo, ring2Mat);
-        ring2.rotation.x = Math.PI / 4;
-        mainGroup.add(ring2);
+        const bracketArmGeo = new THREE.CylinderGeometry(0.5, 0.8, 0.8, 32);
+        const bracketArm = new THREE.Mesh(bracketArmGeo, whitePlasticMat);
+        bracketArm.position.set(0, 2.2, -0.6);
+        bracketArm.rotation.x = Math.PI / 4;
+        ptzCameraGroup.add(bracketArm);
 
-        // 7. Partículas Flutuantes de Pontos Anatômicos (Pose Keypoints)
-        const particlesGroup = new THREE.Group();
-        const pGeo = new THREE.SphereGeometry(0.06, 16, 16);
-        const pMat = new THREE.MeshBasicMaterial({ color: 0x8ECAE6 });
+        // 2. DUAS ANTENAS WI-FI LATERAIS (LEFT & RIGHT ANTENNAS)
+        const antennaGeo = new THREE.CylinderGeometry(0.07, 0.07, 3.2, 32);
+        const antennaCapGeo = new THREE.SphereGeometry(0.07, 16, 16);
 
-        const pCoords = [
-            [0, 2.3, 0], [0, -2.3, 0], [-2.3, 0, 0], [2.3, 0, 0],
-            [-1.6, 1.6, 0.8], [1.6, 1.6, -0.8], [-1.6, -1.6, -0.8], [1.6, -1.6, 0.8]
-        ];
+        // Antena Esquerda
+        const leftAntenna = new THREE.Mesh(antennaGeo, whitePlasticMat);
+        leftAntenna.position.set(-1.4, 2.0, -0.6);
+        const leftCap = new THREE.Mesh(antennaCapGeo, whitePlasticMat);
+        leftCap.position.set(0, 1.6, 0);
+        leftAntenna.add(leftCap);
+        ptzCameraGroup.add(leftAntenna);
 
-        pCoords.forEach(c => {
-            const p = new THREE.Mesh(pGeo, pMat);
-            p.position.set(...c);
-            particlesGroup.add(p);
+        // Antena Direita
+        const rightAntenna = new THREE.Mesh(antennaGeo, whitePlasticMat);
+        rightAntenna.position.set(1.4, 2.0, -0.6);
+        const rightCap = new THREE.Mesh(antennaCapGeo, whitePlasticMat);
+        rightCap.position.set(0, 1.6, 0);
+        rightAntenna.add(rightCap);
+        ptzCameraGroup.add(rightAntenna);
+
+        // 3. MÓDULO SUPERIOR FIXO (TOP STATIC CAMERA HOUSING)
+        const topHousingGeo = new THREE.CylinderGeometry(1.2, 1.1, 1.3, 32);
+        const topHousing = new THREE.Mesh(topHousingGeo, whitePlasticMat);
+        topHousing.position.set(0, 1.1, -0.1);
+        ptzCameraGroup.add(topHousing);
+
+        // Painel Frontal Escuro da Câmara Superior
+        const topFaceplateGeo = new THREE.BoxGeometry(1.5, 0.9, 0.15);
+        const topFaceplate = new THREE.Mesh(topFaceplateGeo, blackFaceplateMat);
+        topFaceplate.position.set(0, 1.0, 0.9);
+        ptzCameraGroup.add(topFaceplate);
+
+        // Lente Central Superior
+        const topLensRimGeo = new THREE.CylinderGeometry(0.32, 0.32, 0.2, 32);
+        const topLensRim = new THREE.Mesh(topLensRimGeo, darkHousingMat);
+        topLensRim.rotation.x = Math.PI / 2;
+        topLensRim.position.set(0, 1.0, 0.98);
+        ptzCameraGroup.add(topLensRim);
+
+        const topLensGlassGeo = new THREE.SphereGeometry(0.24, 32, 32);
+        const topLensGlass = new THREE.Mesh(topLensGlassGeo, lensGlassMat);
+        topLensGlass.position.set(0, 1.0, 1.02);
+        ptzCameraGroup.add(topLensGlass);
+
+        // 4 LEDs na Câmara Superior (2 de cada lado)
+        const ledSmallGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.1, 16);
+        const topLedPositions = [[-0.5, 1.15], [-0.5, 0.85], [0.5, 1.15], [0.5, 0.85]];
+
+        topLedPositions.forEach(pos => {
+            const led = new THREE.Mesh(ledSmallGeo, ledYellowEmissiveMat);
+            led.rotation.x = Math.PI / 2;
+            led.position.set(pos[0], pos[1], 0.98);
+            ptzCameraGroup.add(led);
         });
-        mainGroup.add(particlesGroup);
 
-        // Rastreamento Suave da Inclinacao pelo Mouse
+        // 4. MÓDULO INFERIOR GIRATÓRIO PTZ (LOWER ROTATING PTZ DOME CAMERA)
+        const ptzDomeGroup = new THREE.Group();
+        ptzDomeGroup.position.set(0, -0.7, -0.1);
+        ptzCameraGroup.add(ptzDomeGroup);
+
+        // Base/U-Bracket do PTZ (Preto)
+        const ptzForkGeo = new THREE.CylinderGeometry(1.15, 1.15, 0.6, 32);
+        const ptzFork = new THREE.Mesh(ptzForkGeo, darkHousingMat);
+        ptzFork.position.set(0, 0.4, 0);
+        ptzDomeGroup.add(ptzFork);
+
+        // Esfera Principal do PTZ (Globe Eyeball)
+        const ptzGlobeGeo = new THREE.SphereGeometry(1.1, 32, 32);
+        const ptzGlobe = new THREE.Mesh(ptzGlobeGeo, darkHousingMat);
+        ptzGlobe.position.set(0, -0.2, 0);
+        ptzDomeGroup.add(ptzGlobe);
+
+        // Painel Frontal do PTZ (Placa Arredondada com Lente Principal)
+        const ptzFaceplateGeo = new THREE.CylinderGeometry(0.85, 0.85, 0.2, 32);
+        const ptzFaceplate = new THREE.Mesh(ptzFaceplateGeo, blackFaceplateMat);
+        ptzFaceplate.rotation.x = Math.PI / 2;
+        ptzFaceplate.position.set(0, -0.2, 0.9);
+        ptzDomeGroup.add(ptzFaceplate);
+
+        // Lente Principal do PTZ (Visão Noturna Principal)
+        const ptzMainLensRimGeo = new THREE.CylinderGeometry(0.38, 0.38, 0.25, 32);
+        const ptzMainLensRim = new THREE.Mesh(ptzMainLensRimGeo, darkHousingMat);
+        ptzMainLensRim.rotation.x = Math.PI / 2;
+        ptzMainLensRim.position.set(0, -0.2, 0.98);
+        ptzDomeGroup.add(ptzMainLensRim);
+
+        const ptzMainLensGlassGeo = new THREE.SphereGeometry(0.32, 32, 32);
+        const ptzMainLensGlass = new THREE.Mesh(ptzMainLensGlassGeo, lensGlassMat);
+        ptzMainLensGlass.position.set(0, -0.2, 1.05);
+        ptzDomeGroup.add(ptzMainLensGlass);
+
+        // 8 LEDs no Módulo PTZ (Arrancados em Círculo em Volta da Lente)
+        const ledCircleRadius = 0.62;
+        for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2;
+            const x = Math.cos(angle) * ledCircleRadius;
+            const y = Math.sin(angle) * ledCircleRadius;
+            
+            const isYellow = i % 2 === 0;
+            const ledMesh = new THREE.Mesh(ledSmallGeo, isYellow ? ledYellowEmissiveMat : ledInfraredEmissiveMat);
+            ledMesh.rotation.x = Math.PI / 2;
+            ledMesh.position.set(x, -0.2 + y, 0.98);
+            ptzDomeGroup.add(ledMesh);
+        }
+
+        // Anel Cyber Holográfico de Rastreamento (Subtil)
+        const ptzRingGeo = new THREE.TorusGeometry(2.2, 0.015, 16, 100);
+        const ptzRingMat = new THREE.MeshBasicMaterial({ color: 0x8ECAE6, transparent: true, opacity: 0.4, wireframe: true });
+        const ptzRing = new THREE.Mesh(ptzRingGeo, ptzRingMat);
+        ptzRing.position.set(0, -0.2, 0);
+        ptzCameraGroup.add(ptzRing);
+
+        // RASTREAMENTO INTERATIVO DO SUAVE MOVIMENTO DO RATO
         let mouseX = 0, mouseY = 0;
         let targetX = 0, targetY = 0;
 
         window.addEventListener('mousemove', (e) => {
-            mouseX = (e.clientX / window.innerWidth - 0.5) * 0.8;
-            mouseY = (e.clientY / window.innerHeight - 0.5) * 0.8;
+            mouseX = (e.clientX / window.innerWidth - 0.5) * 0.7;
+            mouseY = (e.clientY / window.innerHeight - 0.5) * 0.5;
         });
 
-        // Loop de Animação Principal
+        // LOOP DE ANIMAÇÃO 3D
         function animate() {
             requestAnimationFrame(animate);
 
-            // Rotações contínuas sutis
-            ring1.rotation.z += 0.005;
-            ring2.rotation.z -= 0.003;
-            particlesGroup.rotation.y += 0.004;
+            // Animação de Rotação Suave da Câmara
+            ptzRing.rotation.z += 0.004;
 
-            // Interatividade fluida com o mouse (Lerp)
+            // Movimento PTZ Dinâmico
             targetX += (mouseX - targetX) * 0.05;
             targetY += (mouseY - targetY) * 0.05;
 
-            mainGroup.rotation.y = targetX;
-            mainGroup.rotation.x = targetY;
+            ptzCameraGroup.rotation.y = targetX * 0.8;
+            ptzCameraGroup.rotation.x = targetY * 0.6;
+
+            // Rotação extra independente do domo inferior PTZ ao mover o rato
+            ptzDomeGroup.rotation.y = targetX * 0.5;
 
             renderer.render(scene, camera);
         }
         animate();
 
-        // Animação de Scrollytelling
+        // ANIMAÇÃO DE SCROLLYTELLING (EFEITO PTZ DE RASTREIO DA PÁGINA)
         window.addEventListener('scroll', () => {
             const scrollY = window.scrollY;
             const maxScroll = document.body.scrollHeight - window.innerHeight;
             const progress = Math.min(Math.max(scrollY / maxScroll, 0), 1);
 
-            // Deslocamento volumétrico das peças no scroll
-            glassLens.position.z = 0.3 + progress * 1.5;
-            core.position.z = 0.5 + progress * 1.8;
-            ring1.scale.set(1 + progress * 0.6, 1 + progress * 0.6, 1 + progress * 0.6);
-            ring2.scale.set(1 + progress * 0.9, 1 + progress * 0.9, 1 + progress * 0.9);
-            particlesGroup.scale.set(1 + progress * 1.2, 1 + progress * 1.2, 1 + progress * 1.2);
+            // A câmara roda o módulo PTZ inferior para acompanhar o scroll do utilizador
+            ptzDomeGroup.rotation.x = progress * Math.PI * 0.4;
+            ptzDomeGroup.rotation.y = Math.sin(progress * Math.PI * 2) * 0.5;
+
+            // Expansão do anel de telemetria
+            ptzRing.scale.set(1 + progress * 0.5, 1 + progress * 0.5, 1 + progress * 0.5);
         });
 
+        // RESPONSIVIDADE DO ECRÃ
         window.addEventListener('resize', () => {
             camera.aspect = container.clientWidth / container.clientHeight;
             camera.updateProjectionMatrix();
