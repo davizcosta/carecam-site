@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CARE-CAM | Monitoramento Ergonômico NR-17</title>
+    <title>CARE-CAM | Sistema de Monitoramento Ergonômico NR-17</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -12,10 +12,10 @@
                 extend: {
                     colors: {
                         bgDark: '#08090C',
-                        cardDark: '#0F111A',
-                        cardBorder: '#1E2638',
+                        cardDark: '#0D0F17',
+                        cardBorder: '#1A2030',
                         babyBlue: '#8ECAE6',
-                        babyBlueGlow: '#A0C4FF',
+                        babyBlueGlow: '#B8E1F4',
                     }
                 }
             }
@@ -26,40 +26,113 @@
     <style>
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #08090C; }
-        ::-webkit-scrollbar-thumb { background: #1E2638; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #1A2030; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #8ECAE6; }
         
-        /* Efeito de iluminação em fundo */
         .glow-bg {
-            background: radial-gradient(circle at 50% 50%, rgba(142, 202, 230, 0.08) 0%, rgba(8, 9, 12, 0) 70%);
+            background: radial-gradient(circle at 50% 50%, rgba(142, 202, 230, 0.09) 0%, rgba(8, 9, 12, 0) 75%);
+        }
+        .grid-pattern {
+            background-image: radial-gradient(rgba(142, 202, 230, 0.1) 1px, transparent 1px);
+            background-size: 24px 24px;
         }
     </style>
 </head>
-<body class="bg-bgDark text-slate-100 font-sans antialiased selection:bg-babyBlue selection:text-bgDark overflow-x-hidden">
+<body class="bg-bgDark text-slate-100 font-sans antialiased selection:bg-babyBlue selection:text-bgDark overflow-x-hidden relative grid-pattern">
 
-    <!-- Header Fixo com Efeito Glass & Badge Live -->
-    <header class="fixed top-0 left-0 w-full z-50 backdrop-blur-xl bg-bgDark/80 border-b border-slate-800/80 px-6 md:px-12 py-4 flex justify-between items-center">
+    <!-- Toast Notification Floater -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-cardDark border border-babyBlue/40 text-slate-100 px-5 py-3 rounded-xl shadow-[0_0_25px_rgba(142,202,230,0.2)] flex items-center gap-3">
+        <span class="w-2.5 h-2.5 rounded-full bg-babyBlue animate-ping"></span>
+        <span id="toast-message" class="text-xs font-mono">Mensagem de teste</span>
+    </div>
+
+    <!-- Header Fixo -->
+    <header class="fixed top-0 left-0 w-full z-40 backdrop-blur-xl bg-bgDark/80 border-b border-slate-800/80 px-6 md:px-12 py-4 flex justify-between items-center">
         <div class="flex items-center gap-3">
-            <div class="w-2.5 h-2.5 rounded-full bg-babyBlue shadow-[0_0_12px_#8ECAE6]"></div>
+            <div class="w-3 h-3 rounded-full bg-babyBlue shadow-[0_0_15px_#8ECAE6]"></div>
             <span class="font-black tracking-widest text-lg">CARE<span class="text-babyBlue">-CAM</span></span>
         </div>
 
         <!-- Status Live -->
         <div class="hidden lg:flex items-center gap-2 bg-cardDark border border-babyBlue/20 px-3 py-1 rounded-full text-[10px] font-mono text-babyBlue">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            SISTEMA ATIVO • 30 FPS
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            AO VIVO • 30 FPS • SENSOR ATIVO
         </div>
 
         <nav class="hidden md:flex gap-8 text-[11px] font-mono tracking-widest text-slate-400">
             <a href="#inicio" class="hover:text-babyBlue transition-colors">01. INÍCIO</a>
-            <a href="#tecnologia" class="hover:text-babyBlue transition-colors">02. TECNOLOGIA</a>
-            <a href="#relatorios" class="hover:text-babyBlue transition-colors">03. AUDITORIA</a>
+            <a href="#simulador" class="hover:text-babyBlue transition-colors">02. SIMULADOR</a>
+            <a href="#tecnologia" class="hover:text-babyBlue transition-colors">03. TECNOLOGIA</a>
+            <a href="#relatorios" class="hover:text-babyBlue transition-colors">04. AUDITORIA</a>
         </nav>
 
-        <button class="bg-babyBlue/10 text-babyBlue border border-babyBlue/40 hover:bg-babyBlue hover:text-bgDark px-5 py-2 rounded-full text-xs font-bold font-mono tracking-wider transition-all duration-300 shadow-[0_0_20px_rgba(142,202,230,0.15)]">
-            Acessar Painel
-        </button>
+        <div class="flex items-center gap-3">
+            <button onclick="openAuthModal('login')" class="text-xs font-mono text-slate-300 hover:text-babyBlue px-3 py-2 transition-colors">
+                Entrar
+            </button>
+            <button onclick="openAuthModal('register')" class="bg-babyBlue/10 text-babyBlue border border-babyBlue/40 hover:bg-babyBlue hover:text-bgDark px-5 py-2 rounded-full text-xs font-bold font-mono tracking-wider transition-all duration-300 shadow-[0_0_20px_rgba(142,202,230,0.15)]">
+                Criar Conta
+            </button>
+        </div>
     </header>
+
+    <!-- Modal de Autenticação (Criar Conta / Entrar) -->
+    <div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300 px-4">
+        <div class="bg-cardDark border border-cardBorder w-full max-w-md rounded-2xl p-6 md:p-8 relative shadow-[0_0_50px_rgba(142,202,230,0.15)] transform scale-95 transition-all duration-300" id="modal-box">
+            
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-2 text-sm font-mono">
+                ✕
+            </button>
+
+            <!-- Seletor de Abas -->
+            <div class="flex border-b border-slate-800 mb-6">
+                <button id="tab-login" onclick="switchAuthTab('login')" class="pb-3 px-4 font-mono text-xs text-babyBlue border-b-2 border-babyBlue font-bold w-1/2 text-center transition-all">
+                    ENTRAR
+                </button>
+                <button id="tab-register" onclick="switchAuthTab('register')" class="pb-3 px-4 font-mono text-xs text-slate-400 border-b-2 border-transparent hover:text-slate-200 w-1/2 text-center transition-all">
+                    CRIAR CONTA
+                </button>
+            </div>
+
+            <!-- Form de Login -->
+            <form id="form-login" onsubmit="handleAuthSubmit(event, 'Login realizado com sucesso!')" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-mono text-slate-400 mb-1">E-MAIL CORPORATIVO / INSTITUCIONAL</label>
+                    <input type="email" required placeholder="seu@ceap.org.br" class="w-full bg-bgDark border border-cardBorder rounded-lg px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-babyBlue transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-mono text-slate-400 mb-1">SENHA DE ACESSO</label>
+                    <input type="password" required placeholder="••••••••" class="w-full bg-bgDark border border-cardBorder rounded-lg px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-babyBlue transition-all">
+                </div>
+                <button type="submit" class="w-full bg-babyBlue text-bgDark font-mono font-bold text-xs py-3 rounded-lg hover:shadow-[0_0_20px_rgba(142,202,230,0.4)] transition-all">
+                    ACESSAR PAINEL CARE-CAM
+                </button>
+            </form>
+
+            <!-- Form de Registro -->
+            <form id="form-register" onsubmit="handleAuthSubmit(event, 'Conta criada com sucesso! Seja bem-vindo.')" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-xs font-mono text-slate-400 mb-1">NOME COMPLETO</label>
+                    <input type="text" required placeholder="Davi Costa" class="w-full bg-bgDark border border-cardBorder rounded-lg px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-babyBlue transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-mono text-slate-400 mb-1">E-MAIL INSTITUCIONAL</label>
+                    <input type="email" required placeholder="estudante@ceap.org.br" class="w-full bg-bgDark border border-cardBorder rounded-lg px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-babyBlue transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-mono text-slate-400 mb-1">SENHA</label>
+                    <input type="password" required placeholder="Crie uma senha forte" class="w-full bg-bgDark border border-cardBorder rounded-lg px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-babyBlue transition-all">
+                </div>
+                <button type="submit" class="w-full bg-babyBlue text-bgDark font-mono font-bold text-xs py-3 rounded-lg hover:shadow-[0_0_20px_rgba(142,202,230,0.4)] transition-all">
+                    REGISTRAR NOVA CONTA
+                </button>
+            </form>
+
+            <div class="mt-6 text-center text-[10px] text-slate-500 font-mono">
+                Conformidade com LGPD e NR-17 • 34ª FeCEAP
+            </div>
+        </div>
+    </div>
 
     <!-- Layout de 2 Colunas com Scrollytelling -->
     <div class="relative w-full">
@@ -69,14 +142,14 @@
             <div id="canvas-container" class="w-full h-full pointer-events-auto"></div>
         </div>
 
-        <!-- Coluna de Texto no Lado Esquerdo -->
+        <!-- Coluna de Conteúdo no Lado Esquerdo -->
         <div class="w-full md:w-1/2 px-6 md:px-16 z-20 relative">
             
             <!-- SEÇÃO 1: Hero -->
             <section id="inicio" class="min-h-screen flex flex-col justify-center py-20">
                 <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-babyBlue/10 border border-babyBlue/20 text-babyBlue text-xs font-mono w-fit mb-6">
                     <span class="w-2 h-2 rounded-full bg-babyBlue animate-ping"></span>
-                    FeCEAP 2026 • Projeto Acadêmico
+                    34ª FeCEAP • Grupo de Projetos 2026
                 </div>
                 
                 <h1 class="text-4xl md:text-6xl font-black tracking-tight leading-[1.1] mb-6">
@@ -87,102 +160,229 @@
                 </h1>
                 
                 <p class="text-slate-400 text-sm md:text-base max-w-md mb-8 leading-relaxed">
-                    O CARE-CAM monitora a postura corporal em tempo real utilizando visão computacional e câmeras comuns, garantindo conformidade com a norma NR-17.
+                    O CARE-CAM monitora a postura corporal de múltiplos operadores em tempo real usando visão computacional e webcams comuns.
                 </p>
 
                 <div class="flex flex-wrap gap-4">
-                    <a href="#tecnologia" class="bg-babyBlue text-bgDark font-bold px-6 py-3.5 rounded-xl text-xs font-mono tracking-wider hover:shadow-[0_0_30px_rgba(142,202,230,0.4)] transition-all">
-                        VER COMO FUNCIONA
+                    <button onclick="openAuthModal('register')" class="bg-babyBlue text-bgDark font-bold px-6 py-3.5 rounded-xl text-xs font-mono tracking-wider hover:shadow-[0_0_30px_rgba(142,202,230,0.4)] transition-all">
+                        CRIAR CONTA GRATUITA
+                    </button>
+                    <a href="#simulador" class="border border-cardBorder bg-cardDark text-slate-300 font-bold px-6 py-3.5 rounded-xl text-xs font-mono tracking-wider hover:border-babyBlue/50 transition-all">
+                        TESTAR SIMULADOR
                     </a>
                 </div>
             </section>
 
-            <!-- SEÇÃO 2: Rastreamento Corporal -->
-            <section id="tecnologia" class="min-h-screen flex flex-col justify-center py-20">
-                <span class="text-babyBlue text-xs font-mono uppercase tracking-widest mb-3">02 / Algoritmo YOLOv8 Pose</span>
-                <h2 class="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight">Análise de 17 Pontos Anatômicos</h2>
-                <p class="text-slate-400 text-sm md:text-base max-w-md mb-8 leading-relaxed">
-                    O modelo identifica articulações chave sem armazenar imagens pessoais, preservando a privacidade e calculando ângulos de inclinação instantaneamente.
+            <!-- SEÇÃO 2: Simulador Interativo de Postura -->
+            <section id="simulador" class="min-h-screen flex flex-col justify-center py-20">
+                <span class="text-babyBlue text-xs font-mono uppercase tracking-widest mb-3">02 / Teste ao Vivo</span>
+                <h2 class="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight">Simulador de Postura</h2>
+                <p class="text-slate-400 text-sm md:text-base max-w-md mb-6 leading-relaxed">
+                    Clique nos botões abaixo para alterar a postura do operador em tempo real e ver a reação do sistema.
                 </p>
 
-                <!-- Cards com Efeito Tech -->
-                <div class="grid gap-4 max-w-md">
-                    <div class="bg-cardDark/90 border border-cardBorder p-5 rounded-2xl hover:border-babyBlue/50 transition-all group">
-                        <div class="flex justify-between items-center mb-2">
-                            <h3 class="text-white font-bold text-sm">Razão de Aspecto do Tronco</h3>
-                            <span class="text-babyBlue font-mono text-xs">Abaixo de 0.88</span>
-                        </div>
-                        <p class="text-slate-400 text-xs leading-relaxed">Detecta inclinação excessiva da coluna e postura curvada na bancada.</p>
+                <!-- Painel de Controle de Teste -->
+                <div class="bg-cardDark border border-cardBorder p-6 rounded-2xl max-w-md space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                        <span class="text-xs font-mono text-slate-400">OPERADOR: <strong class="text-slate-200">OP-001</strong></span>
+                        <span id="posture-badge" class="px-2.5 py-1 rounded-md text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                            POSTURA CORRETA
+                        </span>
                     </div>
 
-                    <div class="bg-cardDark/90 border border-cardBorder p-5 rounded-2xl hover:border-babyBlue/50 transition-all group">
-                        <div class="flex justify-between items-center mb-2">
-                            <h3 class="text-white font-bold text-sm">Alinhamento Cervical</h3>
-                            <span class="text-babyBlue font-mono text-xs">Fadiga Detectada</span>
+                    <div class="grid grid-cols-2 gap-3 text-xs font-mono">
+                        <div class="bg-bgDark p-3 rounded-lg border border-slate-800">
+                            <span class="text-slate-500 block mb-1">RAZÃO DE TRONCO</span>
+                            <span id="metric-ratio" class="text-babyBlue text-base font-bold">0.94</span>
                         </div>
-                        <p class="text-slate-400 text-xs leading-relaxed">Monitora a projeção da cabeça em relação à linha dos ombros.</p>
+                        <div class="bg-bgDark p-3 rounded-lg border border-slate-800">
+                            <span class="text-slate-500 block mb-1">ESTRESSE MÁXIMO</span>
+                            <span id="metric-stress" class="text-babyBlue text-base font-bold">98%</span>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2 pt-2">
+                        <button onclick="setSimulationState('good')" class="w-1/2 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px] font-mono py-2.5 rounded-lg font-bold hover:bg-emerald-500 hover:text-bgDark transition-all">
+                            Simular Postura OK
+                        </button>
+                        <button onclick="setSimulationState('bad')" class="w-1/2 bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-mono py-2.5 rounded-lg font-bold hover:bg-amber-500 hover:text-bgDark transition-all">
+                            Simular Inclinação
+                        </button>
                     </div>
                 </div>
             </section>
 
-            <!-- SEÇÃO 3: Relatórios Executivos -->
-            <section id="relatorios" class="min-h-screen flex flex-col justify-center py-20">
-                <span class="text-babyBlue text-xs font-mono uppercase tracking-widest mb-3">03 / Telemetria MQTT & Laudos</span>
-                <h2 class="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight">Conformidade NR-17 Auditável</h2>
+            <!-- SEÇÃO 3: Rastreamento Corporal -->
+            <section id="tecnologia" class="min-h-screen flex flex-col justify-center py-20">
+                <span class="text-babyBlue text-xs font-mono uppercase tracking-widest mb-3">03 / Algoritmo YOLOv8 Pose</span>
+                <h2 class="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight">17 Pontos Anatômicos</h2>
                 <p class="text-slate-400 text-sm md:text-base max-w-md mb-8 leading-relaxed">
-                    Envio de métricas para servidores centrais e exportação em 1 clique de relatórios em HTML estilizado e planilhas CSV.
+                    Mapeamos articulações corporais chave preservando a privacidade visual e calculando angulações ergonômicas de forma automática.
                 </p>
 
-                <div class="bg-cardDark border border-babyBlue/20 p-6 rounded-2xl max-w-md shadow-[0_0_30px_rgba(142,202,230,0.05)]">
-                    <div class="text-xs font-mono text-babyBlue mb-2">SCORE NR-17 ATUAL</div>
-                    <div class="text-4xl font-black text-white mb-2">98% <span class="text-emerald-400 text-xs font-normal">Conforme</span></div>
-                    <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-                        <div class="bg-babyBlue h-full w-[98%] shadow-[0_0_10px_#8ECAE6]"></div>
+                <div class="grid gap-4 max-w-md">
+                    <div class="bg-cardDark/90 border border-cardBorder p-5 rounded-2xl hover:border-babyBlue/50 transition-all">
+                        <h3 class="text-white font-bold text-sm mb-1">Cálculo de Tronco</h3>
+                        <p class="text-slate-400 text-xs leading-relaxed">Mede a proporção da caixa delimitadora do tronco (altura / largura).</p>
                     </div>
+
+                    <div class="bg-cardDark/90 border border-cardBorder p-5 rounded-2xl hover:border-babyBlue/50 transition-all">
+                        <h3 class="text-white font-bold text-sm mb-1">Linha Cervical & Ombros</h3>
+                        <p class="text-slate-400 text-xs leading-relaxed">Detecta projeção do nariz à frente dos ombros como indicativo de fadiga.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SEÇÃO 4: Relatórios Executivos -->
+            <section id="relatorios" class="min-h-screen flex flex-col justify-center py-20">
+                <span class="text-babyBlue text-xs font-mono uppercase tracking-widest mb-3">04 / Telemetria MQTT</span>
+                <h2 class="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight">Relatórios com 1 Clique</h2>
+                <p class="text-slate-400 text-sm md:text-base max-w-md mb-8 leading-relaxed">
+                    Geração imediata de laudos executivos auditáveis em HTML e arquivos de dados CSV para o departamento de Segurança do Trabalho.
+                </p>
+
+                <div class="bg-cardDark border border-babyBlue/20 p-6 rounded-2xl max-w-md shadow-[0_0_30px_rgba(142,202,230,0.05)] space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div class="text-xs font-mono text-babyBlue">SCORE NR-17 DA SALA</div>
+                        <span id="score-val" class="text-2xl font-black text-white">98%</span>
+                    </div>
+                    
+                    <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                        <div id="score-bar" class="bg-babyBlue h-full w-[98%] shadow-[0_0_10px_#8ECAE6] transition-all duration-500"></div>
+                    </div>
+
+                    <button onclick="generateReportSimulation()" class="w-full bg-babyBlue/10 text-babyBlue border border-babyBlue/30 hover:bg-babyBlue hover:text-bgDark text-xs font-mono font-bold py-3 rounded-xl transition-all">
+                        EXPORTAR RELATÓRIO DE TESTE (CSV / HTML)
+                    </button>
                 </div>
             </section>
 
         </div>
     </div>
 
-    <!-- Script 3D Avançado (Three.js + Rastreio Postural) -->
+    <!-- Script de Lógica Interativa e 3D -->
     <script>
+        // --- GERENCIAMENTO DE MODAL E AUTENTICAÇÃO ---
+        function openAuthModal(mode) {
+            const modal = document.getElementById('auth-modal');
+            const modalBox = document.getElementById('modal-box');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modalBox.classList.remove('scale-95');
+            modalBox.classList.add('scale-100');
+            switchAuthTab(mode);
+        }
+
+        function closeAuthModal() {
+            const modal = document.getElementById('auth-modal');
+            const modalBox = document.getElementById('modal-box');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modalBox.classList.remove('scale-100');
+            modalBox.classList.add('scale-95');
+        }
+
+        function switchAuthTab(tab) {
+            const tabLogin = document.getElementById('tab-login');
+            const tabRegister = document.getElementById('tab-register');
+            const formLogin = document.getElementById('form-login');
+            const formRegister = document.getElementById('form-register');
+
+            if (tab === 'login') {
+                tabLogin.className = "pb-3 px-4 font-mono text-xs text-babyBlue border-b-2 border-babyBlue font-bold w-1/2 text-center transition-all";
+                tabRegister.className = "pb-3 px-4 font-mono text-xs text-slate-400 border-b-2 border-transparent hover:text-slate-200 w-1/2 text-center transition-all";
+                formLogin.classList.remove('hidden');
+                formRegister.classList.add('hidden');
+            } else {
+                tabRegister.className = "pb-3 px-4 font-mono text-xs text-babyBlue border-b-2 border-babyBlue font-bold w-1/2 text-center transition-all";
+                tabLogin.className = "pb-3 px-4 font-mono text-xs text-slate-400 border-b-2 border-transparent hover:text-slate-200 w-1/2 text-center transition-all";
+                formRegister.classList.remove('hidden');
+                formLogin.classList.add('hidden');
+            }
+        }
+
+        function handleAuthSubmit(e, message) {
+            e.preventDefault();
+            closeAuthModal();
+            showToast(message);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            toastMsg.innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3500);
+        }
+
+        // --- SIMULADOR DE POSTURA ---
+        function setSimulationState(state) {
+            const badge = document.getElementById('posture-badge');
+            const ratio = document.getElementById('metric-ratio');
+            const stress = document.getElementById('metric-stress');
+            const scoreVal = document.getElementById('score-val');
+            const scoreBar = document.getElementById('score-bar');
+
+            if (state === 'good') {
+                badge.className = "px-2.5 py-1 rounded-md text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30";
+                badge.innerText = "POSTURA CORRETA";
+                ratio.innerText = "0.94";
+                stress.innerText = "98%";
+                scoreVal.innerText = "98%";
+                scoreBar.style.width = "98%";
+                scoreBar.className = "bg-babyBlue h-full shadow-[0_0_10px_#8ECAE6] transition-all duration-500";
+                showToast("Postura reestabelecida em conformidade com NR-17.");
+            } else {
+                badge.className = "px-2.5 py-1 rounded-md text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30";
+                badge.innerText = "ALERTA: TRONCO INCLINADO";
+                ratio.innerText = "0.78";
+                stress.innerText = "72%";
+                scoreVal.innerText = "75%";
+                scoreBar.style.width = "75%";
+                scoreBar.className = "bg-amber-400 h-full shadow-[0_0_10px_#F59E0B] transition-all duration-500";
+                showToast("Alerta: Desvio ergonômico detectado pelo CARE-CAM!");
+            }
+        }
+
+        function generateReportSimulation() {
+            showToast("Relatório de Compliance NR-17 gerado com sucesso em HTML e CSV!");
+        }
+
+        // --- RENDERIZAÇÃO 3D COM THREE.JS ---
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
 
-        // Câmera
         const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
         camera.position.z = 7;
 
-        // Renderizador
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(container.clientWidth, container.clientHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         container.appendChild(renderer.domElement);
 
-        // Luzes
+        // Iluminação
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
         scene.add(ambientLight);
 
-        const pointLight = new THREE.PointLight(0x8ECAE6, 4, 15);
+        const pointLight = new THREE.PointLight(0x8ECAE6, 5, 15);
         pointLight.position.set(4, 4, 6);
         scene.add(pointLight);
 
-        // Grupo Principal do Objeto
+        // Objeto 3D Central
         const mainGroup = new THREE.Group();
         scene.add(mainGroup);
 
-        // 1. Corpo Central da Câmara (Preto Tech)
+        // Corpo da Câmera
         const cameraBodyGeo = new THREE.BoxGeometry(2.2, 1.3, 0.9);
         const cameraBodyMat = new THREE.MeshStandardMaterial({
-            color: 0x0F111A,
+            color: 0x0D0F17,
             metalness: 0.9,
             roughness: 0.2
         });
         const cameraBody = new THREE.Mesh(cameraBodyGeo, cameraBodyMat);
         mainGroup.add(cameraBody);
 
-        // 2. Lente Brilhante (Azul Bebé Glow)
+        // Lente Glowing Azul Bebê
         const lensGeo = new THREE.CylinderGeometry(0.55, 0.55, 0.5, 32);
         const lensMat = new THREE.MeshStandardMaterial({
             color: 0x8ECAE6,
@@ -195,7 +395,7 @@
         lens.position.z = 0.55;
         mainGroup.add(lens);
 
-        // 3. Mapeamento de Pontos Posturais (Keypoints Flutuantes)
+        // Keypoints do Rastreamento Postural
         const keypointsGroup = new THREE.Group();
         const keypointGeo = new THREE.SphereGeometry(0.08, 16, 16);
         const keypointMat = new THREE.MeshBasicMaterial({ color: 0x8ECAE6 });
@@ -213,13 +413,13 @@
         });
         mainGroup.add(keypointsGroup);
 
-        // 4. Estrutura de Conexões (Linhas Cyber)
+        // Anel do Laser
         const ringGeo = new THREE.TorusGeometry(2.2, 0.015, 16, 100);
         const ringMat = new THREE.MeshBasicMaterial({ color: 0x8ECAE6, wireframe: true });
         const ring = new THREE.Mesh(ringGeo, ringMat);
         mainGroup.add(ring);
 
-        // Animação Contínua em Background
+        // Animação Contínua
         function animate() {
             requestAnimationFrame(animate);
             ring.rotation.z += 0.003;
@@ -227,23 +427,20 @@
         }
         animate();
 
-        // Animação no Scroll (Scrollytelling Explosivo)
+        // Animação no Scroll
         window.addEventListener('scroll', () => {
             const scrollY = window.scrollY;
             const maxScroll = document.body.scrollHeight - window.innerHeight;
             const progress = Math.min(Math.max(scrollY / maxScroll, 0), 1);
 
-            // Rotações dinâmicas
             mainGroup.rotation.y = progress * Math.PI * 2.5;
             mainGroup.rotation.x = progress * Math.PI * 0.4;
 
-            // Expansão das peças conforme avança a rolagem
             lens.position.z = 0.55 + progress * 1.2;
             keypointsGroup.scale.set(1 + progress * 1.5, 1 + progress * 1.5, 1 + progress * 1.5);
             ring.scale.set(1 + progress * 0.8, 1 + progress * 0.8, 1 + progress * 0.8);
         });
 
-        // Responsividade do Canvas
         window.addEventListener('resize', () => {
             camera.aspect = container.clientWidth / container.clientHeight;
             camera.updateProjectionMatrix();
