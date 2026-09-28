@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CARE-CAM | Monitoramento Ergonômico NR-17</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bgDark: '#08090C',
+                        cardDark: '#0F111A',
+                        cardBorder: '#1E2638',
+                        babyBlue: '#8ECAE6',
+                        babyBlueGlow: '#A0C4FF',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Three.js para Renderização 3D -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #08090C; }
+        ::-webkit-scrollbar-thumb { background: #1E2638; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #8ECAE6; }
+        
+        /* Efeito de iluminação em fundo */
+        .glow-bg {
+            background: radial-gradient(circle at 50% 50%, rgba(142, 202, 230, 0.08) 0%, rgba(8, 9, 12, 0) 70%);
+        }
+    </style>
+</head>
+<body class="bg-bgDark text-slate-100 font-sans antialiased selection:bg-babyBlue selection:text-bgDark overflow-x-hidden">
+
+    <!-- Header Fixo com Efeito Glass & Badge Live -->
+    <header class="fixed top-0 left-0 w-full z-50 backdrop-blur-xl bg-bgDark/80 border-b border-slate-800/80 px-6 md:px-12 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="w-2.5 h-2.5 rounded-full bg-babyBlue shadow-[0_0_12px_#8ECAE6]"></div>
+            <span class="font-black tracking-widest text-lg">CARE<span class="text-babyBlue">-CAM</span></span>
+        </div>
+
+        <!-- Status Live -->
+        <div class="hidden lg:flex items-center gap-2 bg-cardDark border border-babyBlue/20 px-3 py-1 rounded-full text-[10px] font-mono text-babyBlue">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            SISTEMA ATIVO • 30 FPS
+        </div>
+
+        <nav class="hidden md:flex gap-8 text-[11px] font-mono tracking-widest text-slate-400">
+            <a href="#inicio" class="hover:text-babyBlue transition-colors">01. INÍCIO</a>
+            <a href="#tecnologia" class="hover:text-babyBlue transition-colors">02. TECNOLOGIA</a>
+            <a href="#relatorios" class="hover:text-babyBlue transition-colors">03. AUDITORIA</a>
+        </nav>
+
+        <button class="bg-babyBlue/10 text-babyBlue border border-babyBlue/40 hover:bg-babyBlue hover:text-bgDark px-5 py-2 rounded-full text-xs font-bold font-mono tracking-wider transition-all duration-300 shadow-[0_0_20px_rgba(142,202,230,0.15)]">
+            Acessar Painel
+        </button>
+    </header>
+
+    <!-- Layout de 2 Colunas com Scrollytelling -->
+    <div class="relative w-full">
+        
+        <!-- Área 3D Fixa no Lado Direito -->
+        <div class="sticky top-0 right-0 w-full md:w-1/2 h-screen float-right z-10 flex items-center justify-center pointer-events-none glow-bg">
+            <div id="canvas-container" class="w-full h-full pointer-events-auto"></div>
+        </div>
+
+        <!-- Coluna de Texto no Lado Esquerdo -->
+        <div class="w-full md:w-1/2 px-6 md:px-16 z-20 relative">
+            
+            <!-- SEÇÃO 1: Hero -->
+            <section id="inicio" class="min-h-screen flex flex-col justify-center py-20">
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-babyBlue/10 border border-babyBlue/20 text-babyBlue text-xs font-mono w-fit mb-6">
+                    <span class="w-2 h-2 rounded-full bg-babyBlue animate-ping"></span>
+                    FeCEAP 2026 • Projeto Acadêmico
+                </div>
+                
+                <h1 class="text-4xl md:text-6xl font-black tracking-tight leading-[1.1] mb-6">
+                    Ergonomia contínua. <br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-babyBlue via-white to-babyBlueGlow">
+                        Sem intromissão.
+                    </span>
+                </h1>
+                
+                <p class="text-slate-400 text-sm md:text-base max-w-md mb-8 leading-relaxed">
+                    O CARE-CAM monitora a postura corporal em tempo real utilizando visão computacional e câmeras comuns, garantindo conformidade com a norma NR-17.
+                </p>
+
+                <div class="flex flex-wrap gap-4">
+                    <a href="#tecnologia" class="bg-babyBlue text-bgDark font-bold px-6 py-3.5 rounded-xl text-xs font-mono tracking-wider hover:shadow-[0_0_30px_rgba(142,202,230,0.4)] transition-all">
+                        VER COMO FUNCIONA
+                    </a>
+                </div>
+            </section>
+
+            <!-- SEÇÃO 2: Rastreamento Corporal -->
+            <section id="tecnologia" class="min-h-screen flex flex-col justify-center py-20">
+                <span class="text-babyBlue text-xs font-mono uppercase tracking-widest mb-3">02 / Algoritmo YOLOv8 Pose</span>
+                <h2 class="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight">Análise de 17 Pontos Anatômicos</h2>
+                <p class="text-slate-400 text-sm md:text-base max-w-md mb-8 leading-relaxed">
+                    O modelo identifica articulações chave sem armazenar imagens pessoais, preservando a privacidade e calculando ângulos de inclinação instantaneamente.
+                </p>
+
+                <!-- Cards com Efeito Tech -->
+                <div class="grid gap-4 max-w-md">
+                    <div class="bg-cardDark/90 border border-cardBorder p-5 rounded-2xl hover:border-babyBlue/50 transition-all group">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-white font-bold text-sm">Razão de Aspecto do Tronco</h3>
+                            <span class="text-babyBlue font-mono text-xs">Abaixo de 0.88</span>
+                        </div>
+                        <p class="text-slate-400 text-xs leading-relaxed">Detecta inclinação excessiva da coluna e postura curvada na bancada.</p>
+                    </div>
+
+                    <div class="bg-cardDark/90 border border-cardBorder p-5 rounded-2xl hover:border-babyBlue/50 transition-all group">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-white font-bold text-sm">Alinhamento Cervical</h3>
+                            <span class="text-babyBlue font-mono text-xs">Fadiga Detectada</span>
+                        </div>
+                        <p class="text-slate-400 text-xs leading-relaxed">Monitora a projeção da cabeça em relação à linha dos ombros.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SEÇÃO 3: Relatórios Executivos -->
+            <section id="relatorios" class="min-h-screen flex flex-col justify-center py-20">
+                <span class="text-babyBlue text-xs font-mono uppercase tracking-widest mb-3">03 / Telemetria MQTT & Laudos</span>
+                <h2 class="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight">Conformidade NR-17 Auditável</h2>
+                <p class="text-slate-400 text-sm md:text-base max-w-md mb-8 leading-relaxed">
+                    Envio de métricas para servidores centrais e exportação em 1 clique de relatórios em HTML estilizado e planilhas CSV.
+                </p>
+
+                <div class="bg-cardDark border border-babyBlue/20 p-6 rounded-2xl max-w-md shadow-[0_0_30px_rgba(142,202,230,0.05)]">
+                    <div class="text-xs font-mono text-babyBlue mb-2">SCORE NR-17 ATUAL</div>
+                    <div class="text-4xl font-black text-white mb-2">98% <span class="text-emerald-400 text-xs font-normal">Conforme</span></div>
+                    <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <div class="bg-babyBlue h-full w-[98%] shadow-[0_0_10px_#8ECAE6]"></div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Script 3D Avançado (Three.js + Rastreio Postural) -->
+    <script>
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+
+        // Câmera
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.z = 7;
+
+        // Renderizador
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        // Luzes
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0x8ECAE6, 4, 15);
+        pointLight.position.set(4, 4, 6);
+        scene.add(pointLight);
+
+        // Grupo Principal do Objeto
+        const mainGroup = new THREE.Group();
+        scene.add(mainGroup);
+
+        // 1. Corpo Central da Câmara (Preto Tech)
+        const cameraBodyGeo = new THREE.BoxGeometry(2.2, 1.3, 0.9);
+        const cameraBodyMat = new THREE.MeshStandardMaterial({
+            color: 0x0F111A,
+            metalness: 0.9,
+            roughness: 0.2
+        });
+        const cameraBody = new THREE.Mesh(cameraBodyGeo, cameraBodyMat);
+        mainGroup.add(cameraBody);
+
+        // 2. Lente Brilhante (Azul Bebé Glow)
+        const lensGeo = new THREE.CylinderGeometry(0.55, 0.55, 0.5, 32);
+        const lensMat = new THREE.MeshStandardMaterial({
+            color: 0x8ECAE6,
+            emissive: 0x8ECAE6,
+            emissiveIntensity: 0.6,
+            roughness: 0.1
+        });
+        const lens = new THREE.Mesh(lensGeo, lensMat);
+        lens.rotation.x = Math.PI / 2;
+        lens.position.z = 0.55;
+        mainGroup.add(lens);
+
+        // 3. Mapeamento de Pontos Posturais (Keypoints Flutuantes)
+        const keypointsGroup = new THREE.Group();
+        const keypointGeo = new THREE.SphereGeometry(0.08, 16, 16);
+        const keypointMat = new THREE.MeshBasicMaterial({ color: 0x8ECAE6 });
+
+        const positions = [
+            [-1.8, 1.2, 0], [1.8, 1.2, 0],
+            [-1.2, -1.2, 0], [1.2, -1.2, 0],
+            [0, 1.8, 0.5], [0, -1.8, -0.5]
+        ];
+
+        positions.forEach(pos => {
+            const kp = new THREE.Mesh(keypointGeo, keypointMat);
+            kp.position.set(...pos);
+            keypointsGroup.add(kp);
+        });
+        mainGroup.add(keypointsGroup);
+
+        // 4. Estrutura de Conexões (Linhas Cyber)
+        const ringGeo = new THREE.TorusGeometry(2.2, 0.015, 16, 100);
+        const ringMat = new THREE.MeshBasicMaterial({ color: 0x8ECAE6, wireframe: true });
+        const ring = new THREE.Mesh(ringGeo, ringMat);
+        mainGroup.add(ring);
+
+        // Animação Contínua em Background
+        function animate() {
+            requestAnimationFrame(animate);
+            ring.rotation.z += 0.003;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Animação no Scroll (Scrollytelling Explosivo)
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            const maxScroll = document.body.scrollHeight - window.innerHeight;
+            const progress = Math.min(Math.max(scrollY / maxScroll, 0), 1);
+
+            // Rotações dinâmicas
+            mainGroup.rotation.y = progress * Math.PI * 2.5;
+            mainGroup.rotation.x = progress * Math.PI * 0.4;
+
+            // Expansão das peças conforme avança a rolagem
+            lens.position.z = 0.55 + progress * 1.2;
+            keypointsGroup.scale.set(1 + progress * 1.5, 1 + progress * 1.5, 1 + progress * 1.5);
+            ring.scale.set(1 + progress * 0.8, 1 + progress * 0.8, 1 + progress * 0.8);
+        });
+
+        // Responsividade do Canvas
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+    </script>
+</body>
+</html>
