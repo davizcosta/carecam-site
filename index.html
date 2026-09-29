@@ -3,7 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CARE-CAM Enterprise | Sistema de Monitoramento Ergonômico NR-17</title>
+    
+    <!-- Título visível no Google e no separador do navegador -->
+    <title>CARE-CAM | Monitorização Ergonómica NR-17 - FeCEAP</title>
+    
+    <!-- Descrição para o Google -->
+    <meta name="description" content="Projeto de Visão Computacional para Análise Ergonómica em Tempo Real. Desenvolvido para a 34ª FeCEAP por estudantes do CEAP.">
+    <meta name="keywords" content="CARE-CAM, Ergonomia, NR-17, CEAP, FeCEAP, Visão Computacional, MediaPipe">
+    <meta name="author" content="Equipa CARE-CAM - CEAP">
+
+    <!-- Configuração Open Graph (Para quando partilhares o link no WhatsApp) -->
+    <meta property="og:title" content="CARE-CAM | Teste de Postura Ergonómica ao Vivo">
+    <meta property="og:description" content="Faz o teste de postura em tempo real com a tua webcam. Projeto FeCEAP 2026.">
+    <meta property="og:type" content="website">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -21,28 +34,14 @@
             }
         }
     </script>
-    <!-- Three.js para Renderização 3D da Câmara PTZ -->
+
+    <!-- Three.js para Renderização 3D -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     
     <!-- MediaPipe Pose AI para Deteção de Postura via Webcam Real -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
-
-    <style>
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #08090C; }
-        ::-webkit-scrollbar-thumb { background: #1A2030; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #8ECAE6; }
-        
-        .glow-bg {
-            background: radial-gradient(circle at 50% 50%, rgba(142, 202, 230, 0.1) 0%, rgba(8, 9, 12, 0) 75%);
-        }
-        .grid-pattern {
-            background-image: radial-gradient(rgba(142, 202, 230, 0.08) 1px, transparent 1px);
-            background-size: 28px 28px;
-        }
-    </style>
 </head>
 <body class="bg-bgDark text-slate-100 font-sans antialiased selection:bg-babyBlue selection:text-bgDark overflow-x-hidden relative grid-pattern">
 
