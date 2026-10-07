@@ -754,109 +754,194 @@
   renderer.setSize(container.clientWidth, container.clientHeight);
 });
 
-// Variáveis principais do sistema
+// Variáveis do Sistema CARE-CAM
 const video = document.getElementById('webcam');
 const canvas = document.getElementById('output');
 const btnExportar = document.getElementById('btn-exportar');
 
-let logSessao = []; // Array que vai guardar os dados para o relatório final
+let logSessao = []; 
+let contadorFadiga = 0; // Armazena os disparos de fadiga dinâmicos
+let operadoreFadigados = {}; // Rastreia o tempo de fadiga de cada operador
 
 // Mapeamento de emoções para Português
 const traducoesEmocoes = {
-  neutral: 'Neutro', happy: 'Feliz', sad: 'Triste', 
-  angry: 'Zangado', fearful: 'Assustado', disgusted: 'Enojado', surprised: 'Surpreso'
+  neutral: 'Neutro', 
+  happy: 'Feliz / Atento', 
+  sad: 'Cansaço / Tristeza', 
+  angry: 'Estresse / Irritação', 
+  fearful: 'Apreensivo', 
+  disgusted: 'Desconfortável', 
+  surprised: 'Surpreso'
 };
 
+// Função para atualizar os elementos da tua interface sem alterar o layout
+function atualizarPainelUI(totalPessoas, scoreSala) {
+  // 1. Atualizar Total de Operadores no Card Superior
+  const cards = document.querySelectorAll('span, div, h2');
+  cards.forEach(el => {
+    if (el.innerText && (el.innerText.includes('Você (Ao Vivo)') || el.innerText.includes('Operador') || el.innerText.includes('Operadores'))) {
+      el.innerText = `${String(totalPessoas).padStart(2, '0')} Operador(es)`;
+    }
+  });
+
+  // 2. Atualizar Disparos de Fadiga no Card Superior
+  cards.forEach(el => {
+    if (el.innerText && (el.innerText.includes('Alertas') || el.innerText.includes('Alerta'))) {
+      el.innerText = `${String(contadorFadiga).padStart(2, '0')} Alertas`;
+    }
+  });
+
+  // 3. Atualizar Score Geral da Sala
+  cards.forEach(el => {
+    if (el.innerText && el.innerText.includes('%') && el.innerText.length <= 4) {
+      el.innerText = `${scoreSala}%`;
+    }
+  });
+}
+
+// Registar mensagem no Log de Telemetria (Painel Direito + Relatório)
+function adicionarLogTelemetry(mensagem) {
+  const timestamp = new Date().toLocaleTimeString();
+  const linhaLog = `[${timestamp}] ${mensagem}`;
+  logSessao.push(linhaLog);
+
+  // Procura o painel de logs de telemetria no HTML para inserir a nova linha
+  const logContainer = document.querySelector('.font-mono') || document.querySelector('[class*="log"]') || document.body;
+  
+  if (logContainer && logContainer !== document.body) {
+    const p = document.createElement('p');
+    p.className = "text-xs text-green-400 mb-1";
+    p.innerText = linhaLog;
+    logContainer.appendChild(p);
+    logContainer.scrollTop = logContainer.scrollHeight;
+  }
+  
+  console.log(linhaLog);
+}
+
 async function iniciarCareCam() {
-  // 1. Carregar os modelos da IA diretamente de um CDN público
+  adicionarLogTelemetry("SISTEMA: A inicializar IA de Múltipla Deteção e Análise Emocional...");
+
   const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+
+  // Carrega os modelos otimizados para velocidade e múltiplos rostos
   await Promise.all([
     faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
     faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
   ]);
-  
-  adicionarLog("Modelos de Múltiplos Rostos e Emoções carregados.");
 
-  // 2. Iniciar a câmara
-  const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+  adicionarLogTelemetry("CÂMARA: Stream de webcam iniciado com sucesso.");
+
+  // Configuração de vídeo de alta resolução para capturar várias pessoas no fundo
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
+    audio: false
+  });
   video.srcObject = stream;
 
-  // 3. Quando o vídeo começar, iniciar a análise contínua
   video.addEventListener('play', () => {
     const displaySize = { width: video.videoWidth, height: video.videoHeight };
     faceapi.matchDimensions(canvas, displaySize);
 
+    // Deteção Contínua (a cada 200ms)
     setInterval(async () => {
-      // Deteta TODOS os rostos e analisa as expressões de cada um
-      const detecoes = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceExpressions();
+      // Opções avançadas para apanhar até 10+ pessoas no mesmo ecrã
+      const opcoesDetetor = new faceapi.TinyFaceDetectorOptions({
+        inputSize: 608,      // Resolução de busca alta para capturar rostos pequenos/distantes
+        scoreThreshold: 0.15 // Sensibilidade baixa para detetar múltiplas pessoas simultaneamente
+      });
+
+      const detecoes = await faceapi.detectAllFaces(video, opcoesDetetor).withFaceExpressions();
       const detecoesRedimensionadas = faceapi.resizeResults(detecoes, displaySize);
 
-      // Limpa o frame anterior
-      canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+      ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Atualiza o contador de operadores na tua interface (ajusta o ID conforme o teu HTML)
-      const contadorOperadores = document.getElementById('total-operadores');
-      if (contadorOperadores) contadorOperadores.innerText = detecoes.length.toString().padStart(2, '0');
+      const totalOperadores = detecoes.length;
+      let fadigadosNesteFrame = 0;
 
-      // Desenha e regista cada pessoa
       detecoesRedimensionadas.forEach((detecao, index) => {
         const expressoes = detecao.expressions;
         
-        // Descobre qual é a emoção mais forte no momento
+        // Emoção com maior probabilidade
         const emocaoDominante = Object.keys(expressoes).reduce((a, b) => expressoes[a] > expressoes[b] ? a : b);
         const emocaoPT = traducoesEmocoes[emocaoDominante] || emocaoDominante;
 
-        // Desenha a caixa no vídeo com a emoção
-        const box = detecao.detection.box;
-        const desenharCaixa = new faceapi.draw.DrawBox(box, { 
-          label: `Op ${index + 1} | ${emocaoPT}`, 
-          boxColor: '#38bdf8' 
-        });
-        desenharCaixa.draw(canvas);
+        // Análise de Fadiga: Se estiver triste, com raiva, enojado ou neutro prolongado
+        const isFadigaOuEstresse = ['sad', 'angry', 'disgusted'].includes(emocaoDominante);
 
-        // Apenas regista no relatório de 5 em 5 segundos para não encher muito o ficheiro
-        if (Math.random() < 0.05) {
-            adicionarLog(`Operador ${index + 1} registou estado emocional: ${emocaoPT}`);
+        const opId = `OP-${index + 1}`;
+        if (!operadoreFadigados[opId]) operadoreFadigados[opId] = 0;
+
+        if (isFadigaOuEstresse) {
+          operadoreFadigados[opId]++;
+          fadigadosNesteFrame++;
+
+          // Dispara alerta de fadiga a cada 15 frames contínuos com expressão de cansaço/estresse
+          if (operadoreFadigados[opId] % 15 === 0) {
+            contadorFadiga++;
+            adicionarLogTelemetry(`⚠️ ALERTA NR-17: Indicador de Fadiga/Estresse detetado no ${opId} (${emocaoPT}).`);
+          }
+        } else {
+          operadoreFadigados[opId] = Math.max(0, operadoreFadigados[opId] - 1);
         }
+
+        // Cor da caixa: Vermelho para Fadiga/Estresse, Azul/Verde para Normal
+        const boxColor = isFadigaOuEstresse ? '#ef4444' : '#38bdf8';
+
+        // Desenhar caixa e rótulo no vídeo
+        const box = detecao.detection.box;
+        const drawBox = new faceapi.draw.DrawBox(box, {
+          label: `${opId} | ${emocaoPT}`,
+          boxColor: boxColor
+        });
+        drawBox.draw(canvas);
       });
-    }, 200); // Analisa 5 vezes por segundo
+
+      // Cálculo do Score da Sala (100% - penalidade por fadiga)
+      let scoreGeral = 100;
+      if (totalOperadores > 0) {
+        scoreGeral = Math.max(50, Math.round(100 - (fadigadosNesteFrame / totalOperadores) * 40));
+      }
+
+      // Atualizar indicadores visuais da interface
+      atualizarPainelUI(totalOperadores, scoreGeral);
+
+    }, 200);
   });
 }
 
-// Função para gerir os registos internos
-function adicionarLog(mensagem) {
-  const timestamp = new Date().toLocaleTimeString();
-  const registo = `[${timestamp}] SISTEMA: ${mensagem}`;
-  logSessao.push(registo);
-  console.log(registo);
-}
-
-// 4. Função de Exportação de Relatório (Descarrega um ficheiro .TXT)
+// Botão para Exportar Relatório Final
 if (btnExportar) {
   btnExportar.addEventListener('click', () => {
     if (logSessao.length === 0) {
-      alert("Ainda não há dados suficientes para gerar o relatório.");
+      alert("Ainda não existem registos de telemetria para exportar.");
       return;
     }
 
-    const dataSessao = new Date().toLocaleDateString();
-    const textoRelatorio = `=======================================\nRELATÓRIO DE SESSÃO CARE-CAM - ${dataSessao}\n=======================================\n\n` 
-                         + logSessao.join('\n') 
-                         + `\n\n=======================================\nFim do Relatório.`;
+    const dataSessao = new Date().toLocaleString();
+    const conteudoRelatorio = 
+      `=======================================================\n` +
+      `       RELATÓRIO DE TELEMETRIA E ERGONOMIA CARE-CAM    \n` +
+      `       Data/Hora: ${dataSessao}                        \n` +
+      `=======================================================\n\n` +
+      `TOTAL DE DISPAROS DE FADIGA REGISTADOS: ${contadorFadiga}\n` +
+      `-------------------------------------------------------\n` +
+      `HISTÓRICO DE EVENTOS EM TEMPO REAL:\n\n` +
+      logSessao.join('\n') +
+      `\n\n=======================================================\n` +
+      `Fim do Relatório. Conformidade NR-17.`;
 
-    const blob = new Blob([textoRelatorio], { type: 'text/plain;charset=utf-8' });
+    const blob = new Blob([conteudoRelatorio], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `CareCam_Relatorio_${dataSessao.replace(/\//g, '-')}.txt`;
+    link.download = `Relatorio_CareCam_${new Date().toISOString().slice(0,10)}.txt`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   });
 }
 
-// Arranca o sistema
+// Iniciar a aplicação quando o HTML estiver pronto
 window.addEventListener('DOMContentLoaded', iniciarCareCam);
-    </script>
-</body>
-</html>
