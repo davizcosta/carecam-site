@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CARE-CAM | Sistema de Deteção de Pessoas</title>
+  <title>CARE-CAM | Análise de Postura</title>
   
-  <!-- TensorFlow.js e Modelo COCO-SSD -->
+  <!-- TensorFlow.js e Modelo de Análise de Pose (MoveNet) -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.3/dist/pose-detection.min.js"></script>
 
   <style>
     * {
@@ -29,7 +29,7 @@
 
     header {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
     }
 
     h1 {
@@ -49,28 +49,40 @@
       color: #94a3b8;
     }
 
-    .counter-card {
-      background: linear-gradient(135deg, #0284c7, #0369a1);
-      padding: 15px 30px;
-      border-radius: 12px;
+    .dashboard {
+      display: flex;
+      gap: 15px;
       margin-bottom: 20px;
-      text-align: center;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
-    .counter-card span {
-      font-size: 2.5rem;
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      padding: 12px 24px;
+      border-radius: 12px;
+      text-align: center;
+      min-width: 140px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+
+    .card span {
+      font-size: 2rem;
       font-weight: bold;
-      color: #ffffff;
       display: block;
     }
 
-    .counter-card p {
-      font-size: 0.9rem;
+    .card p {
+      font-size: 0.8rem;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      opacity: 0.9;
+      letter-spacing: 0.5px;
+      color: #94a3b8;
     }
+
+    .card.total span { color: #38bdf8; }
+    .card.good span { color: #4ade80; }
+    .card.bad span { color: #f87171; }
 
     .video-container {
       position: relative;
@@ -102,12 +114,22 @@
 
   <header>
     <h1>CARE-CAM</h1>
-    <div id="status" class="status-badge">A inicializar sistema...</div>
+    <div id="status" class="status-badge">A inicializar detetor de postura...</div>
   </header>
 
-  <div class="counter-card">
-    <span id="count">0</span>
-    <p>Pessoas Detetadas</p>
+  <div class="dashboard">
+    <div class="card total">
+      <span id="count-total">0</span>
+      <p>Pessoas</p>
+    </div>
+    <div class="card good">
+      <span id="count-good">0</span>
+      <p>Boa Postura</p>
+    </div>
+    <div class="card bad">
+      <span id="count-bad">0</span>
+      <p>Postura Incorreta</p>
+    </div>
   </div>
 
   <div class="video-container">
@@ -116,31 +138,49 @@
   </div>
 
   <script>
-    let model;
+    let detector;
     const video = document.getElementById('webcam');
     const canvas = document.getElementById('output');
     const ctx = canvas.getContext('2d');
-    const countEl = document.getElementById('count');
+    
+    const countTotalEl = document.getElementById('count-total');
+    const countGoodEl = document.getElementById('count-good');
+    const countBadEl = document.getElementById('count-bad');
     const statusEl = document.getElementById('status');
 
-    // Configurações para detetar MULTIPLAS PESSOAS
-    const MAX_PERSONS = 50;        // Aumentado para até 50 pessoas
-    const MIN_CONFIDENCE = 0.35;   // Sensibilidade ajustada (35%) para pegar pessoas mais distantes
+    // Conexões de pontos do esqueleto
+    const SKELETON_CONNECTIONS = [
+      ['nose', 'left_eye'], ['nose', 'right_eye'],
+      ['left_eye', 'left_ear'], ['right_eye', 'right_ear'],
+      ['left_shoulder', 'right_shoulder'],
+      ['left_shoulder', 'left_elbow'], ['left_elbow', 'left_wrist'],
+      ['right_shoulder', 'right_elbow'], ['right_elbow', 'right_wrist'],
+      ['left_shoulder', 'left_hip'], ['right_shoulder', 'right_hip'],
+      ['left_hip', 'right_hip'],
+      ['left_hip', 'left_knee'], ['left_knee', 'left_ankle'],
+      ['right_hip', 'right_knee'], ['right_knee', 'right_ankle']
+    ];
 
     async function init() {
       try {
-        statusEl.innerText = "A carregar modelo de IA...";
-        // Carrega o modelo de visão computacional
-        model = await cocoSsd.load();
+        statusEl.innerText = "A carregar IA de Postura (MoveNet)...";
         
-        statusEl.innerText = "A solicitar acesso à câmara...";
+        // Inicializa o detetor multipessoa
+        detector = await poseDetection.createDetector(
+          poseDetection.SupportedModels.MoveNet,
+          {
+            modelType: poseDetection.movenet.modelType.MULTIPOSE_LIGHTNING,
+            enableSmoothing: true
+          }
+        );
+        
+        statusEl.innerText = "A ligar câmara...";
         await startCamera();
         
-        statusEl.innerText = "● SISTEMA ATIVO E A MONITORIZAR";
+        statusEl.innerText = "● SISTEMA ATIVO - ANÁLISE DE POSTURA";
         statusEl.style.color = "#4ade80";
         statusEl.style.borderColor = "#22c55e";
 
-        // Inicia o ciclo de deteção
         detectFrame();
       } catch (err) {
         console.error(err);
@@ -151,11 +191,7 @@
 
     async function startCamera() {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-          facingMode: "user"
-        },
+        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
         audio: false
       });
       
@@ -170,50 +206,131 @@
       });
     }
 
-    async function detectFrame() {
-      if (video.readyState === 4) {
-        // Realiza a deteção sem limite restrito de 5 pessoas
-        const predictions = await model.detect(video, MAX_PERSONS, MIN_CONFIDENCE);
-        
-        // Filtra estritamente a classe "person"
-        const persons = predictions.filter(pred => pred.class === 'person');
+    // Algoritmo de Avaliação da Postura
+    function analyzePosture(keypoints) {
+      const getPt = (name) => keypoints.find(k => k.name === name && k.score > 0.3);
 
-        // Limpa o canvas anterior
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const leftShoulder = getPt('left_shoulder');
+      const rightShoulder = getPt('right_shoulder');
+      const nose = getPt('nose');
+      const leftEar = getPt('left_ear');
+      const rightEar = getPt('right_ear');
 
-        // Atualiza a contagem no ecrã
-        countEl.innerText = persons.length;
-
-        // Desenha a caixa e identificação de cada pessoa
-        persons.forEach((person, index) => {
-          const [x, y, width, height] = person.bbox;
-          const score = Math.round(person.score * 100);
-
-          // Desenha a caixa ao redor da pessoa
-          ctx.strokeStyle = '#38bdf8';
-          ctx.lineWidth = 3;
-          ctx.strokeRect(x, y, width, height);
-
-          // Fundo para a etiqueta de identificação
-          const label = `Pessoa #${index + 1} (${score}%)`;
-          ctx.font = 'bold 15px sans-serif';
-          const textWidth = ctx.measureText(label).width;
-
-          ctx.fillStyle = '#0284c7';
-          const labelY = y > 25 ? y - 25 : y;
-          ctx.fillRect(x, labelY, textWidth + 10, 22);
-
-          // Texto da etiqueta
-          ctx.fillStyle = '#ffffff';
-          ctx.fillText(label, x + 5, labelY + 16);
-        });
+      if (!leftShoulder || !rightShoulder) {
+        return { label: "Indefinido", color: "#94a3b8", isGood: false };
       }
 
-      // Mantém o ciclo continuo em tempo real
+      // Ponto médio dos ombros
+      const shoulderX = (leftShoulder.x + rightShoulder.x) / 2;
+      const shoulderY = (leftShoulder.y + rightShoulder.y) / 2;
+
+      // Inclinação da linha dos ombros (ombros caídos de um lado)
+      const dxS = Math.abs(leftShoulder.x - rightShoulder.x);
+      const dyS = Math.abs(leftShoulder.y - rightShoulder.y);
+      const shoulderAngle = Math.atan2(dyS, dxS) * (180 / Math.PI);
+
+      // Posição da cabeça relativa aos ombros
+      let headX = shoulderX;
+      let headY = shoulderY - 40;
+
+      if (nose) {
+        headX = nose.x;
+        headY = nose.y;
+      } else if (leftEar || rightEar) {
+        const ear = leftEar || rightEar;
+        headX = ear.x;
+        headY = ear.y;
+      }
+
+      // Ângulo de inclinação da cabeça em relação à vertical do tronco
+      const dxH = Math.abs(headX - shoulderX);
+      const dyH = Math.abs(headY - shoulderY);
+      const headTilt = Math.atan2(dxH, dyH) * (180 / Math.PI);
+
+      // Regra de Postura: Se a cabeça estiver muito inclinada (>20°) ou ombros tortos (>15°)
+      if (headTilt > 20 || shoulderAngle > 15) {
+        return { label: "Postura Incorreta", color: "#ef4444", isGood: false };
+      } else {
+        return { label: "Boa Postura", color: "#22c55e", isGood: true };
+      }
+    }
+
+    async function detectFrame() {
+      if (video.readyState === 4) {
+        const poses = await detector.estimatePoses(video);
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        let goodCount = 0;
+        let badCount = 0;
+
+        poses.forEach((pose, index) => {
+          if (pose.score < 0.25) return;
+
+          const keypoints = pose.keypoints;
+          const posture = analyzePosture(keypoints);
+
+          if (posture.label !== "Indefinido") {
+            if (posture.isGood) goodCount++;
+            else badCount++;
+          }
+
+          // Desenhar linhas do esqueleto
+          SKELETON_CONNECTIONS.forEach(([p1Name, p2Name]) => {
+            const p1 = keypoints.find(k => k.name === p1Name);
+            const p2 = keypoints.find(k => k.name === p2Name);
+
+            if (p1 && p2 && p1.score > 0.3 && p2.score > 0.3) {
+              ctx.beginPath();
+              ctx.moveTo(p1.x, p1.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.strokeStyle = posture.color;
+              ctx.lineWidth = 3;
+              ctx.stroke();
+            }
+          });
+
+          // Desenhar pontos das articulações
+          keypoints.forEach(kp => {
+            if (kp.score > 0.3) {
+              ctx.beginPath();
+              ctx.arc(kp.x, kp.y, 5, 0, 2 * Math.PI);
+              ctx.fillStyle = "#ffffff";
+              ctx.fill();
+            }
+          });
+
+          // Desenhar Etiqueta de Postura por cima da pessoa
+          const validKps = keypoints.filter(k => k.score > 0.3);
+          if (validKps.length > 0) {
+            const minX = Math.min(...validKps.map(k => k.x));
+            const minY = Math.min(...validKps.map(k => k.y));
+
+            const label = `#${index + 1} | ${posture.label}`;
+            ctx.font = 'bold 14px sans-serif';
+            const textWidth = ctx.measureText(label).width;
+
+            const boxY = minY > 30 ? minY - 25 : minY;
+            
+            // Fundo da etiqueta
+            ctx.fillStyle = posture.color;
+            ctx.fillRect(minX, boxY, textWidth + 14, 24);
+
+            // Texto da etiqueta
+            ctx.fillStyle = "#ffffff";
+            ctx.fillText(label, minX + 7, boxY + 17);
+          }
+        });
+
+        // Atualizar os contadores no Dashboard
+        countTotalEl.innerText = goodCount + badCount;
+        countGoodEl.innerText = goodCount;
+        countBadEl.innerText = badCount;
+      }
+
       requestAnimationFrame(detectFrame);
     }
 
-    // Iniciar a aplicação assim que a página carregar
     window.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
