@@ -1,167 +1,182 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="scroll-smooth">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CARE-CAM Enterprise | Sistema de Monitoramento Ergonômico NR-17</title>
+  <title>CARE-CAM Enterprise | Monitoramento NR-17</title>
   
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            bgDark: '#08090C',
-            cardDark: '#0D0F17',
-            cardBorder: '#1A2030',
-            babyBlue: '#8ECAE6',
-            babyBlueGlow: '#B8E1F4'
-          }
-        }
-      }
-    }
-  </script>
-
-  <!-- Three.js para Renderização 3D da Câmara PTZ -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
-  <!-- Biblioteca face-api.js para Múltiplos Rostos e Reconhecimento Emocional -->
-  <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
-
+  <!-- Estilos CSS Nativos (Garante que a interface NUNCA desapareça) -->
   <style>
-    /* Estilização da barra de rolagem dos logs */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #0D0F17; }
-    ::-webkit-scrollbar-thumb { background: #1A2030; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #08090C;
+      color: #e2e8f0;
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 1rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .header-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      max-width: 1280px;
+      margin: 0 auto 1.5rem auto;
+      width: 100%;
+    }
+    .card {
+      background-color: #0D0F17;
+      border: 1px solid #1A2030;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    .card-title { font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; }
+    .card-value { font-size: 1.5rem; font-weight: 700; color: #fff; margin-top: 0.25rem; }
+    .card-sub { font-size: 0.75rem; color: #38bdf8; margin-top: 0.25rem; }
+    
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      max-width: 1280px;
+      margin: 0 auto 1.5rem auto;
+      width: 100%;
+    }
+    @media (min-width: 1024px) {
+      .main-grid { grid-template-columns: 2fr 1fr; }
+    }
+    .feed-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background-color: #000;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      border: 1px solid #1A2030;
+    }
+    video, canvas {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;
+    }
+    canvas { z-index: 10; pointer-events: none; }
+    
+    .overlay-info {
+      position: absolute;
+      top: 10px; left: 10px;
+      background: rgba(13, 15, 23, 0.85);
+      border: 1px solid #1A2030;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.75rem;
+      z-index: 20;
+    }
+    .btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 0.5rem;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn-primary { background-color: #38bdf8; color: #08090C; }
+    .btn-secondary { background-color: #1e293b; color: #cbd5e1; border: 1px solid #334155; }
+    
+    .log-box {
+      background-color: #030712;
+      border: 1px solid #1f2937;
+      border-radius: 0.5rem;
+      height: 320px;
+      padding: 0.75rem;
+      font-family: monospace;
+      font-size: 0.75rem;
+      overflow-y: auto;
+    }
+    .log-item { margin-bottom: 0.25rem; color: #38bdf8; }
+    .log-alert { color: #fbbf24; font-weight: bold; }
+    .log-error { color: #f87171; font-weight: bold; }
   </style>
+
+  <!-- Bibliotecas externas -->
+  <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
 </head>
-<body class="bg-bgDark text-slate-200 font-sans min-h-screen flex flex-col justify-between p-4 md:p-6">
+<body>
 
-  <!-- TOP DASHBOARD CARDS -->
-  <header class="max-w-7xl mx-auto w-full mb-6">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      
-      <!-- Card 1: Dispositivos -->
-      <div class="bg-cardDark border border-cardBorder p-4 rounded-xl shadow-lg">
-        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">DISPOSITIVOS RASTREADOS</p>
-        <h2 class="text-xl font-bold text-white mt-1">01 Webcam Ativa</h2>
-        <p class="text-xs text-emerald-400 mt-1">30 FPS (IA Multi-Face & Emoção)</p>
-      </div>
-
-      <!-- Card 2: Score Geral -->
-      <div class="bg-cardDark border border-cardBorder p-4 rounded-xl shadow-lg">
-        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">SCORE GERAL DA SALA</p>
-        <h2 id="score-val" class="text-3xl font-bold text-sky-400 mt-1">100%</h2>
-        <p class="text-xs text-slate-400 mt-1">Status: Conforme NR-17</p>
-      </div>
-
-      <!-- Card 3: Total Operadores -->
-      <div class="bg-cardDark border border-cardBorder p-4 rounded-xl shadow-lg">
-        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">TOTAL DE OPERADORES</p>
-        <h2 id="total-operadores-val" class="text-xl font-bold text-white mt-1">00 Detectados</h2>
-        <p class="text-xs text-slate-400 mt-1">ID Anônimo: OP-MULTI</p>
-      </div>
-
-      <!-- Card 4: Disparos de Fadiga -->
-      <div class="bg-cardDark border border-cardBorder p-4 rounded-xl shadow-lg">
-        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">DISPAROS DE FADIGA (HOJE)</p>
-        <h2 id="alertas-val" class="text-3xl font-bold text-amber-400 mt-1">00 Alertas</h2>
-        <p class="text-xs text-slate-400 mt-1">Monitoramento de estresse ativo</p>
-      </div>
-
+  <!-- CARDS DO TOPO -->
+  <header class="header-grid">
+    <div class="card">
+      <div class="card-title">DISPOSITIVOS RASTREADOS</div>
+      <div class="card-value">01 Webcam</div>
+      <div class="card-sub" style="color: #4ade80;">✓ 30 FPS • IA Multi-Face</div>
+    </div>
+    <div class="card">
+      <div class="card-title">SCORE GERAL DA SALA</div>
+      <div class="card-value" id="score-val" style="color: #38bdf8;">100%</div>
+      <div class="card-sub" style="color: #94a3b8;">Status: NR-17 Ok</div>
+    </div>
+    <div class="card">
+      <div class="card-title">TOTAL DE OPERADORES</div>
+      <div class="card-value" id="total-operadores-val">00 Detectados</div>
+      <div class="card-sub" style="color: #94a3b8;">Detecção Simultânea</div>
+    </div>
+    <div class="card">
+      <div class="card-title">DISPAROS DE FADIGA</div>
+      <div class="card-value" id="alertas-val" style="color: #fbbf24;">00 Alertas</div>
+      <div class="card-sub" style="color: #94a3b8;">Análise de Estresse Ativa</div>
     </div>
   </header>
 
-  <!-- CONTEÚDO PRINCIPAL (FEED + TELEMETRIA) -->
-  <main class="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+  <!-- PAINEL PRINCIPAL -->
+  <main class="main-grid">
     
-    <!-- ESQUERDA: CÂMARA EM TEMPO REAL (2 Colunas) -->
-    <section class="lg:col-span-2 bg-cardDark border border-cardBorder rounded-2xl p-4 flex flex-col justify-between shadow-2xl">
-      
-      <!-- Cabeçalho do Feed -->
-      <div class="flex justify-between items-center mb-3 px-1">
-        <div class="flex items-center gap-2">
-          <span class="w-2.5 h-2.5 bg-red-500 rounded-full animate-ping"></span>
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">FEED EM TEMPO REAL – CÂMARA AO VIVO</h3>
-        </div>
-        <span class="text-xs text-slate-500 font-mono">RES: 1280x720 • IA ONLINE</span>
+    <!-- ESQUERDA: WEBCAM + CANVAS -->
+    <section class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <span style="font-size: 0.8rem; font-weight: bold; color: #f87171;">● TRANSMISSÃO AO VIVO</span>
+        <span style="font-size: 0.75rem; color: #64748b; font-family: monospace;">CARE-CAM v3.0</span>
       </div>
 
-      <!-- Contentor do Vídeo e Canvas -->
-      <div class="relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-cardBorder flex items-center justify-center">
-        
-        <video id="webcam" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover"></video>
-        <canvas id="output" class="absolute inset-0 w-full h-full object-cover z-10 pointer-events-none"></canvas>
-
-        <!-- Overlay de Informações Técnicas -->
-        <div class="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md border border-slate-700/50 p-3 rounded-lg text-xs font-mono text-slate-300 z-20 pointer-events-none space-y-1">
-          <p class="text-sky-400 font-bold">ALGORITMO: CARE-CAM Multi-Pose v3.0</p>
-          <p>MODO: Detecção Múltipla & Emocional</p>
-          <p>RESOLUÇÃO IA: High-Density (608px)</p>
-          <p>SENSABILIDADE CONF: 0.15</p>
-        </div>
-
-        <!-- Tag de Estado -->
-        <div class="absolute bottom-3 right-3 bg-emerald-500/20 border border-emerald-500/40 px-3 py-1 rounded-full text-xs font-semibold text-emerald-400 backdrop-blur-md z-20">
-          ✓ SISTEMA DE MONITORAMENTO ATIVO
+      <div class="feed-container">
+        <video id="webcam" autoplay playsinline muted></video>
+        <canvas id="output"></canvas>
+        <div class="overlay-info">
+          <p style="color: #38bdf8; font-weight: bold;">ALGORITMO: Multi-Face IA</p>
+          <p>RESOLUÇÃO: High-Density (608px)</p>
         </div>
       </div>
 
-      <!-- Ações da Câmara -->
-      <div class="flex flex-wrap items-center justify-between gap-3 mt-4 pt-3 border-t border-cardBorder">
-        <div class="flex items-center gap-2">
-          <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800">
-            🟢 CÂMARA EM TRANSMISSÃO
-          </span>
-          <button id="btn-pausar" class="px-4 py-1.5 text-xs font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-700 transition">
-            Pausar Câmara
-          </button>
-        </div>
-
-        <button id="btn-exportar" class="px-5 py-2 text-xs font-bold text-slate-900 bg-sky-400 hover:bg-sky-300 rounded-lg shadow-lg shadow-sky-500/20 transition flex items-center gap-2">
-          <span>📥</span> Exportar Relatório
-        </button>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+        <button id="btn-pausar" class="btn btn-secondary">Pausar Câmara</button>
+        <button id="btn-exportar" class="btn btn-primary">📥 Exportar Relatório (.txt)</button>
       </div>
-
     </section>
 
-    <!-- DIREITA: PAINEL DE LOGS DE TELEMETRIA -->
-    <section class="bg-cardDark border border-cardBorder rounded-2xl p-4 flex flex-col justify-between shadow-2xl">
-      
+    <!-- DIREITA: LOGS DE TELEMETRIA -->
+    <section class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
       <div>
-        <div class="flex justify-between items-center mb-3 border-b border-cardBorder pb-2">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">LOGS DE TELEMETRIA (MQTT)</h3>
-          <span class="text-xs text-slate-500 font-mono">broker.hivemq.com</span>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <span class="card-title">LOGS DE TELEMETRIA (MQTT)</span>
         </div>
-
-        <!-- Caixa do Console Terminal -->
-        <div id="logs-container" class="w-full h-80 bg-slate-950 border border-slate-800/80 rounded-xl p-3 font-mono text-xs overflow-y-auto space-y-2 text-slate-400">
-          <p class="text-sky-400">[SISTEMA] Inicializando CARE-CAM Enterprise...</p>
-          <p class="text-slate-500">[SISTEMA] Aguardando permissão de mídia do navegador...</p>
+        <div id="logs-container" class="log-box">
+          <p class="log-item">[SISTEMA] A carregar interface e rotinas do CARE-CAM...</p>
         </div>
       </div>
-
-      <div class="mt-4 pt-3 border-t border-cardBorder flex justify-between items-center">
-        <span class="text-xs text-slate-500">AÇÕES RÁPIDAS:</span>
-        <button id="btn-limpar-logs" class="text-xs text-slate-400 hover:text-slate-200 underline">
-          Limpar Histórico de Logs
-        </button>
-      </div>
-
+      <button id="btn-limpar-logs" class="btn btn-secondary" style="margin-top: 0.75rem; width: 100%;">Limpar Histórico</button>
     </section>
 
   </main>
 
-  <!-- RODAPÉ -->
-  <footer class="max-w-7xl mx-auto w-full text-center text-xs text-slate-600 border-t border-cardBorder/50 pt-4">
-    CARE-CAM Enterprise © 2026 • Sistema Integrado de Monitoramento Ergonômico NR-17
+  <footer style="text-align: center; font-size: 0.75rem; color: #475569; padding-top: 1rem;">
+    CARE-CAM Enterprise © 2026 • Conformidade Normativa NR-17
   </footer>
 
-  <!-- SCRIPT LÓGICO COMPLETO -->
+  <!-- LÓGICA DO SISTEMA -->
   <script>
-    // Elementos da Interface
     const video = document.getElementById('webcam');
     const canvas = document.getElementById('output');
     const btnExportar = document.getElementById('btn-exportar');
@@ -173,16 +188,194 @@
     const alertasVal = document.getElementById('alertas-val');
     const scoreVal = document.getElementById('score-val');
 
-    // Estado do Sistema
     let logSessao = [];
     let contadorFadiga = 0;
     let operadoreFadigados = {};
     let cameraPausada = false;
 
-    // Tradução de Emoções para Português
     const traducoesEmocoes = {
       neutral: 'Neutro', 
       happy: 'Feliz / Atento', 
       sad: 'Cansaço / Tristeza', 
       angry: 'Estresse / Tensão', 
-      fearful: 'Apreens
+      fearful: 'Apreensivo', 
+      disgusted: 'Desconfortável', 
+      surprised: 'Surpreso'
+    };
+
+    function adicionarLog(mensagem, classe = 'log-item') {
+      const timestamp = new Date().toLocaleTimeString();
+      const linhaLog = `[${timestamp}] ${mensagem}`;
+      logSessao.push(linhaLog);
+
+      if (logsContainer) {
+        const p = document.createElement('p');
+        p.className = classe;
+        p.innerText = linhaLog;
+        logsContainer.appendChild(p);
+        logsContainer.scrollTop = logsContainer.scrollHeight;
+      }
+    }
+
+    async function iniciarCareCam() {
+      // Verifica se o biblioteca face-api foi carregada corretamente
+      if (typeof faceapi === 'undefined') {
+        adicionarLog("ERRO CRÍTICO: O script da IA (face-api.js) foi bloqueado pelo seu navegador/AdBlocker. Por favor, desative o AdBlocker nesta página.", "log-error");
+        alert("Atenção: Desative o AdBlocker/Bloqueador de anúncios para que o sistema carregue a biblioteca de visão computacional.");
+        return;
+      }
+
+      adicionarLog("SISTEMA: Carregando modelos de IA de Visão Computacional...");
+
+      const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+
+      try {
+        await Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+          faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
+        ]);
+
+        adicionarLog("IA: Modelos para múltiplos rostos carregados.");
+
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
+          audio: false
+        });
+        
+        video.srcObject = stream;
+        adicionarLog("CÂMARA: Dispositivo de vídeo ativado.");
+
+        video.addEventListener('play', () => {
+          const displaySize = { width: video.videoWidth || 640, height: video.videoHeight || 480 };
+          if (canvas) faceapi.matchDimensions(canvas, displaySize);
+
+          setInterval(async () => {
+            if (cameraPausada) return;
+
+            const opcoesDetetor = new faceapi.TinyFaceDetectorOptions({
+              inputSize: 608,
+              scoreThreshold: 0.15
+            });
+
+            const detecoes = await faceapi.detectAllFaces(video, opcoesDetetor).withFaceExpressions();
+            
+            if (canvas) {
+              const detecoesRedimensionadas = faceapi.resizeResults(detecoes, displaySize);
+              const ctx = canvas.getContext('2d');
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+              const totalPessoas = detecoes.length;
+              let fadigadosNesteFrame = 0;
+
+              detecoesRedimensionadas.forEach((detecao, index) => {
+                const expressoes = detecao.expressions;
+                const emocaoDominante = Object.keys(expressoes).reduce((a, b) => expressoes[a] > expressoes[b] ? a : b);
+                const emocaoPT = traducoesEmocoes[emocaoDominante] || emocaoDominante;
+
+                const isFadigaOuEstresse = ['sad', 'angry', 'disgusted'].includes(emocaoDominante);
+                const opId = `OP-${String(index + 1).padStart(2, '0')}`;
+                
+                if (!operadoreFadigados[opId]) operadoreFadigados[opId] = 0;
+
+                if (isFadigaOuEstresse) {
+                  operadoreFadigados[opId]++;
+                  fadigadosNesteFrame++;
+
+                  if (operadoreFadigados[opId] % 12 === 0) {
+                    contadorFadiga++;
+                    adicionarLog(`⚠️ ALERTA NR-17: Fadiga/Estresse detectado no ${opId} (${emocaoPT}).`, "log-alert");
+                  }
+                } else {
+                  operadoreFadigados[opId] = Math.max(0, operadoreFadigados[opId] - 1);
+                }
+
+                const boxColor = isFadigaOuEstresse ? '#ef4444' : '#38bdf8';
+                const box = detecao.detection.box;
+                const drawBox = new faceapi.draw.DrawBox(box, {
+                  label: `${opId} | ${emocaoPT}`,
+                  boxColor: boxColor
+                });
+                drawBox.draw(canvas);
+              });
+
+              if (totalOperadoresVal) {
+                totalOperadoresVal.innerText = `${String(totalPessoas).padStart(2, '0')} ${totalPessoas === 1 ? 'Operador' : 'Operadores'}`;
+              }
+              
+              if (alertasVal) {
+                alertasVal.innerText = `${String(contadorFadiga).padStart(2, '0')} Alertas`;
+              }
+
+              if (scoreVal) {
+                let scoreGeral = 100;
+                if (totalPessoas > 0) {
+                  scoreGeral = Math.max(40, Math.round(100 - (fadigadosNesteFrame / totalPessoas) * 35));
+                }
+                scoreVal.innerText = `${scoreGeral}%`;
+              }
+            }
+          }, 200);
+        });
+
+      } catch (err) {
+        console.error(err);
+        adicionarLog(`ERRO DE ACESSO: ${err.message}`, "log-error");
+      }
+    }
+
+    if (btnPausar) {
+      btnPausar.addEventListener('click', () => {
+        cameraPausada = !cameraPausada;
+        if (cameraPausada) {
+          video.pause();
+          btnPausar.innerText = "Retomar Câmara";
+          adicionarLog("CÂMARA: Transmissão pausada pelo operador.");
+        } else {
+          video.play();
+          btnPausar.innerText = "Pausar Câmara";
+          adicionarLog("CÂMARA: Transmissão retomada.");
+        }
+      });
+    }
+
+    if (btnLimparLogs) {
+      btnLimparLogs.addEventListener('click', () => {
+        logSessao = [];
+        if (logsContainer) logsContainer.innerHTML = '';
+        adicionarLog("SISTEMA: Logs limpos.");
+      });
+    }
+
+    if (btnExportar) {
+      btnExportar.addEventListener('click', () => {
+        if (logSessao.length === 0) {
+          alert("Não existem dados de telemetria registrados para exportar.");
+          return;
+        }
+
+        const dataSessao = new Date().toLocaleString('pt-BR');
+        const conteudoRelatorio = 
+          `=======================================================\n` +
+          `       RELATÓRIO DE TELEMETRIA E ERGONOMIA CARE-CAM    \n` +
+          `       Data/Hora: ${dataSessao}                        \n` +
+          `=======================================================\n\n` +
+          `DISPAROS DE FADIGA: ${contadorFadiga}\n` +
+          `-------------------------------------------------------\n\n` +
+          `LOGS DE EVENTOS:\n\n` +
+          logSessao.join('\n');
+
+        const blob = new Blob([conteudoRelatorio], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Relatorio_CareCam_${new Date().toISOString().slice(0,10)}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', iniciarCareCam);
+  </script>
+</body>
+</html>
