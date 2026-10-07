@@ -23,6 +23,8 @@
     </script>
     <!-- Three.js para Renderização 3D da Câmara PTZ -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Biblioteca para Múltiplos Rostos e Emoções -->
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
     
     <!-- MediaPipe Pose AI para Deteção de Postura via Webcam Real -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
@@ -751,6 +753,109 @@
             camera.updateProjectionMatrix();
             renderer.setSize(container.clientWidth, container.clientHeight);
         });
+     </script> // Variáveis principais do sistema
+const video = document.getElementById('webcam'); // O ID do teu vídeo no HTML
+const canvas = document.getElementById('output'); // O ID do teu canvas sobre o vídeo
+const btnExportar = document.getElementById('btn-exportar'); // O ID do botão "Exportar Relatório"
+
+let logSessao = []; // Array que vai guardar os dados para o relatório final
+
+// Mapeamento de emoções para Português
+const traducoesEmocoes = {
+  neutral: 'Neutro', happy: 'Feliz', sad: 'Triste', 
+  angry: 'Zangado', fearful: 'Assustado', disgusted: 'Enojado', surprised: 'Surpreso'
+};
+
+async function iniciarCareCam() {
+  // 1. Carregar os modelos da IA diretamente de um CDN público
+  const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+  await Promise.all([
+    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+    faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
+  ]);
+  
+  adicionarLog("Modelos de Múltiplos Rostos e Emoções carregados.");
+
+  // 2. Iniciar a câmara
+  const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+  video.srcObject = stream;
+
+  // 3. Quando o vídeo começar, iniciar a análise contínua
+  video.addEventListener('play', () => {
+    const displaySize = { width: video.videoWidth, height: video.videoHeight };
+    faceapi.matchDimensions(canvas, displaySize);
+
+    setInterval(async () => {
+      // Deteta TODOS os rostos e analisa as expressões de cada um
+      const detecoes = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceExpressions();
+      const detecoesRedimensionadas = faceapi.resizeResults(detecoes, displaySize);
+
+      // Limpa o frame anterior
+      canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+
+      // Atualiza o contador de operadores na tua interface (ajusta o ID conforme o teu HTML)
+      const contadorOperadores = document.getElementById('total-operadores');
+      if (contadorOperadores) contadorOperadores.innerText = detecoes.length.toString().padStart(2, '0');
+
+      // Desenha e regista cada pessoa
+      detecoesRedimensionadas.forEach((detecao, index) => {
+        const expressoes = detecao.expressions;
+        
+        // Descobre qual é a emoção mais forte no momento
+        const emocaoDominante = Object.keys(expressoes).reduce((a, b) => expressoes[a] > expressoes[b] ? a : b);
+        const emocaoPT = traducoesEmocoes[emocaoDominante] || emocaoDominante;
+
+        // Desenha a caixa no vídeo com a emoção
+        const box = detecao.detection.box;
+        const desenharCaixa = new faceapi.draw.DrawBox(box, { 
+          label: `Op ${index + 1} | ${emocaoPT}`, 
+          boxColor: '#38bdf8' 
+        });
+        desenharCaixa.draw(canvas);
+
+        // Apenas regista no relatório de 5 em 5 segundos para não encher muito o ficheiro
+        if (Math.random() < 0.05) {
+            adicionarLog(`Operador ${index + 1} registou estado emocional: ${emocaoPT}`);
+        }
+      });
+    }, 200); // Analisa 5 vezes por segundo
+  });
+}
+
+// Função para gerir os registos internos
+function adicionarLog(mensagem) {
+  const timestamp = new Date().toLocaleTimeString();
+  const registo = `[${timestamp}] SISTEMA: ${mensagem}`;
+  logSessao.push(registo);
+  console.log(registo);
+}
+
+// 4. Função de Exportação de Relatório (Descarrega um ficheiro .TXT)
+if (btnExportar) {
+  btnExportar.addEventListener('click', () => {
+    if (logSessao.length === 0) {
+      alert("Ainda não há dados suficientes para gerar o relatório.");
+      return;
+    }
+
+    const dataSessao = new Date().toLocaleDateString();
+    const textoRelatorio = `=======================================\nRELATÓRIO DE SESSÃO CARE-CAM - ${dataSessao}\n=======================================\n\n` 
+                         + logSessao.join('\n') 
+                         + `\n\n=======================================\nFim do Relatório.`;
+
+    const blob = new Blob([textoRelatorio], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `CareCam_Relatorio_${dataSessao.replace(/\//g, '-')}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
+}
+
+// Arranca o sistema
+window.addEventListener('DOMContentLoaded', iniciarCareCam);
     </script>
 </body>
 </html>
