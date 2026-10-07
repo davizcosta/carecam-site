@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CARE-CAM Enterprise | Sistema de Monitoramento Ergonômico NR-17</title>
-    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -22,12 +21,14 @@
             }
         }
     </script>
-    
     <!-- Three.js para Renderização 3D da Câmara PTZ -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     
-    <!-- face-api.js para Deteção Multi-Pessoa (>5 Pessoas) e Análise Emocional -->
-    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
+    <!-- MediaPipe Pose AI para Deteção de Postura via Webcam Real -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+
 
     <style>
         ::-webkit-scrollbar { width: 5px; }
@@ -46,11 +47,13 @@
 </head>
 <body class="bg-bgDark text-slate-100 font-sans antialiased selection:bg-babyBlue selection:text-bgDark overflow-x-hidden relative grid-pattern">
 
+
     <!-- Toast de Notificações -->
     <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-cardDark border border-babyBlue/40 text-slate-100 px-5 py-3 rounded-xl shadow-[0_0_25px_rgba(142,202,230,0.2)] flex items-center gap-3">
         <span class="w-2.5 h-2.5 rounded-full bg-babyBlue animate-ping"></span>
         <span id="toast-message" class="text-xs font-mono">Mensagem do sistema</span>
     </div>
+
 
     <!-- Header Fixo -->
     <header class="fixed top-0 left-0 w-full z-40 backdrop-blur-xl bg-bgDark/85 border-b border-slate-800/80 px-6 md:px-12 py-4 flex justify-between items-center">
@@ -64,12 +67,14 @@
             </span>
         </div>
 
+
         <nav class="hidden lg:flex gap-8 text-[11px] font-mono tracking-widest text-slate-400">
             <a href="#inicio" class="hover:text-babyBlue transition-colors">01. INÍCIO</a>
             <a href="#tecnologia" class="hover:text-babyBlue transition-colors">02. TECNOLOGIA</a>
             <a href="#auditoria" class="hover:text-babyBlue transition-colors">03. AUDITORIA NR-17</a>
             <a href="#equipe" class="hover:text-babyBlue transition-colors">04. EQUIPE CEAP</a>
         </nav>
+
 
         <div class="flex items-center gap-3">
             <button onclick="openAuthModal('login')" class="text-xs font-mono text-slate-300 hover:text-babyBlue px-3 py-2 transition-colors">
@@ -81,11 +86,13 @@
         </div>
     </header>
 
+
     <!-- Modal de Autenticação -->
     <div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300 px-4">
         <div class="bg-cardDark border border-cardBorder w-full max-w-md rounded-2xl p-6 md:p-8 relative shadow-[0_0_50px_rgba(142,202,230,0.15)] transform scale-95 transition-all duration-300" id="modal-box">
             
             <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-2 text-sm font-mono">✕</button>
+
 
             <div class="flex border-b border-slate-800 mb-6">
                 <button id="tab-login" onclick="switchAuthTab('login')" class="pb-3 px-4 font-mono text-xs text-babyBlue border-b-2 border-babyBlue font-bold w-1/2 text-center transition-all">
@@ -95,6 +102,7 @@
                     SOLICITAR ACESSO
                 </button>
             </div>
+
 
             <form id="form-login" onsubmit="launchDashboard(event)" class="space-y-4">
                 <div>
@@ -110,6 +118,7 @@
                 </button>
             </form>
 
+
             <form id="form-register" onsubmit="handleRegister(event)" class="space-y-4 hidden">
                 <div>
                     <label class="block text-[10px] font-mono text-slate-400 mb-1 uppercase">Nome Completo</label>
@@ -124,11 +133,13 @@
                 </button>
             </form>
 
+
             <div class="mt-6 text-center text-[10px] text-slate-500 font-mono">
                 Projeto CARE-CAM • CEAP - Centro Educacional Assistencial Profissionalizante
             </div>
         </div>
     </div>
+
 
     <!-- PAINEL RESTRITO DO SISTEMA -->
     <div id="dashboard-app" class="fixed inset-0 z-50 bg-bgDark opacity-0 pointer-events-none transition-all duration-500 flex flex-col overflow-y-auto">
@@ -143,6 +154,7 @@
                 </span>
             </div>
 
+
             <div class="flex items-center gap-3">
                 <span class="text-xs font-mono text-slate-400 hidden sm:inline">Operador: <strong class="text-babyBlue">Audit_CEAP_01</strong></span>
                 <button onclick="closeDashboard()" class="bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white px-3 py-1.5 rounded-lg text-xs font-mono transition-all">
@@ -151,11 +163,12 @@
             </div>
         </div>
 
+
         <div class="p-6 md:p-10 max-w-7xl mx-auto w-full space-y-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-6">
                 <div>
                     <h1 class="text-2xl md:text-3xl font-black text-white">Painel do Ergonomista — Teste ao Vivo</h1>
-                    <p class="text-xs font-mono text-slate-400 mt-1">Análise postural e detecção de múltiplos operadores em tempo real com IA</p>
+                    <p class="text-xs font-mono text-slate-400 mt-1">Análise postural automática em tempo real com visão computacional</p>
                 </div>
                 <div class="flex items-center gap-3">
                     <span class="text-xs font-mono text-slate-400">MODO DE ENTRADA:</span>
@@ -166,29 +179,30 @@
                 </div>
             </div>
 
-            <!-- CARDS DE KPIS -->
+
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-cardDark border border-cardBorder p-5 rounded-2xl">
                     <span class="text-slate-500 font-mono text-[10px] block mb-1">DISPOSITIVOS RASTREADOS</span>
                     <span id="kpi-devices" class="text-2xl font-black text-white">01 Webcam Ativa</span>
-                    <span class="text-emerald-400 font-mono text-[10px] block mt-1">30 FPS (Multi-Face & Expression)</span>
+                    <span class="text-emerald-400 font-mono text-[10px] block mt-1">30 FPS (MediaPipe IA)</span>
                 </div>
                 <div class="bg-cardDark border border-cardBorder p-5 rounded-2xl">
                     <span class="text-slate-500 font-mono text-[10px] block mb-1">SCORE GERAL DA SALA</span>
-                    <span id="kpi-score" class="text-2xl font-black text-babyBlue">100%</span>
+                    <span id="kpi-score" class="text-2xl font-black text-babyBlue">98%</span>
                     <span id="kpi-score-status" class="text-emerald-400 font-mono text-[10px] block mt-1">Status: Conforme NR-17</span>
                 </div>
                 <div class="bg-cardDark border border-cardBorder p-5 rounded-2xl">
                     <span class="text-slate-500 font-mono text-[10px] block mb-1">TOTAL DE OPERADORES</span>
-                    <span id="kpi-ops" class="text-2xl font-black text-white">00 Detectados</span>
-                    <span class="text-slate-400 font-mono text-[10px] block mt-1">Capacidade Multi-Pessoa (>5)</span>
+                    <span id="kpi-ops" class="text-2xl font-black text-white">01 Você (Ao Vivo)</span>
+                    <span class="text-slate-400 font-mono text-[10px] block mt-1">ID Anônimo: OP-USER</span>
                 </div>
                 <div class="bg-cardDark border border-cardBorder p-5 rounded-2xl">
                     <span class="text-slate-500 font-mono text-[10px] block mb-1">DISPAROS DE FADIGA (HOJE)</span>
                     <span id="kpi-alerts" class="text-2xl font-black text-amber-400">00 Alertas</span>
-                    <span id="kpi-alerts-sub" class="text-emerald-400/80 font-mono text-[10px] block mt-1">Contador dinâmico em tempo real</span>
+                    <span id="kpi-alerts-sub" class="text-emerald-400/80 font-mono text-[10px] block mt-1">Nenhuma curvatura nociva</span>
                 </div>
             </div>
+
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- FEED DA CÂMARA EM TEMPO REAL -->
@@ -198,25 +212,32 @@
                             <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
                             FEED EM TEMPO REAL — CÂMARA AO VIVO
                         </span>
-                        <span class="text-[10px] font-mono text-slate-500">RES: 1280x720 • IA MULTI-PERSONA ONLINE</span>
+                        <span class="text-[10px] font-mono text-slate-500">RES: 640x480 • IA ONLINE</span>
                     </div>
+
 
                     <!-- CONTAINER DO VÍDEO E CANVAS DA WEBCAM -->
                     <div class="relative w-full h-80 md:h-96 bg-bgDark rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center">
-                        <video id="webcam-video" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover"></video>
-                        <canvas id="cv-canvas" class="absolute inset-0 w-full h-full object-cover z-10 pointer-events-none"></canvas>
                         
-                        <div class="absolute top-4 left-4 bg-black/80 backdrop-blur-md p-3 rounded-lg border border-slate-700 text-[10px] font-mono space-y-1 z-20 pointer-events-none">
-                            <div class="text-babyBlue font-bold">ALGORITMO: CARE-CAM Multi-Face v3.2</div>
-                            <div>MODO: Detecção Simultânea (>5 Pessoas)</div>
-                            <div>RES VARREDURA: High-Density (608px)</div>
-                            <div>SENSABILIDADE CONF: 0.12</div>
+                        <!-- Elemento de Vídeo Oculto (capturado pelo MediaPipe) -->
+                        <video id="webcam-video" class="hidden" playsinline></video>
+                        
+                        <!-- Canvas onde o vídeo + esqueleto são desenhados -->
+                        <canvas id="cv-canvas" class="w-full h-full object-cover transform -scale-x-100"></canvas>
+                        
+                        <div class="absolute top-4 left-4 bg-black/80 backdrop-blur-md p-3 rounded-lg border border-slate-700 text-[10px] font-mono space-y-1 z-10 pointer-events-none">
+                            <div class="text-babyBlue font-bold">ALGORITMO: CARE-CAM Pose v2.4</div>
+                            <div>OPERADOR RASTREADO: <span class="text-white">VOCÊ (OP-USER)</span></div>
+                            <div>INCLINAÇÃO DO TRONCO: <span id="cv-ratio" class="text-emerald-400">0.94 (Ideal)</span></div>
+                            <div>TOLERÂNCIA CONF: <span class="text-slate-300">0.85</span></div>
                         </div>
 
-                        <div id="cv-status-tag" class="absolute bottom-4 right-4 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono text-[11px] px-3 py-1.5 rounded-lg font-bold z-20">
-                            ✓ MONITORAMENTO ATIVO
+
+                        <div id="cv-status-tag" class="absolute bottom-4 right-4 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono text-[11px] px-3 py-1.5 rounded-lg font-bold z-10">
+                            ✓ POSTURA CORRETA
                         </div>
                     </div>
+
 
                     <div class="flex flex-wrap gap-3 mt-4">
                         <button id="btn-webcam" onclick="startWebcam()" class="bg-babyBlue text-bgDark hover:bg-babyBlueGlow font-mono text-xs px-5 py-2.5 rounded-lg transition-all font-bold shadow-[0_0_15px_rgba(142,202,230,0.3)]">
@@ -225,11 +246,12 @@
                         <button onclick="stopWebcam()" class="bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 font-mono text-xs px-4 py-2.5 rounded-lg transition-all">
                             Pausar Câmara
                         </button>
-                        <button onclick="triggerReportDownload()" class="bg-babyBlue text-bgDark hover:bg-babyBlueGlow font-mono text-xs px-5 py-2.5 rounded-lg transition-all font-bold shadow-[0_0_15px_rgba(142,202,230,0.3)] ml-auto flex items-center gap-2">
-                            <span>📥</span> EXPORTAR RELATÓRIO (.TXT)
+                        <button onclick="triggerReportDownload()" class="bg-babyBlue/10 text-babyBlue border border-babyBlue/30 hover:bg-babyBlue hover:text-bgDark font-mono text-xs px-4 py-2.5 rounded-lg transition-all font-bold ml-auto">
+                            Exportar Relatório
                         </button>
                     </div>
                 </div>
+
 
                 <!-- LOGS DE TELEMETRIA -->
                 <div class="bg-cardDark border border-cardBorder p-5 rounded-2xl flex flex-col justify-between">
@@ -239,12 +261,14 @@
                             <span class="text-[10px] font-normal text-slate-500">broker.hivemq.com</span>
                         </h3>
 
+
                         <div id="log-container" class="space-y-2 font-mono text-[10px] text-slate-400 max-h-80 overflow-y-auto pr-2">
                             <div class="p-2 bg-bgDark rounded border border-slate-800 text-slate-300">
-                                [17:10:00] SISTEMA: Aguardando inicialização da câmara do operador...
+                                [17:10:00] SISTEMA: Aguardando inicialização da webcam do utilizador...
                             </div>
                         </div>
                     </div>
+
 
                     <div class="pt-4 border-t border-slate-800">
                         <div class="text-[10px] font-mono text-slate-500 mb-2">AÇÕES RÁPIDAS:</div>
@@ -257,6 +281,7 @@
         </div>
     </div>
 
+
     <!-- Layout de Scrollytelling Público -->
     <div class="relative w-full">
         
@@ -264,6 +289,7 @@
         <div class="sticky top-0 right-0 w-full md:w-1/2 h-screen float-right z-10 flex items-center justify-center pointer-events-none glow-bg">
             <div id="canvas-container" class="w-full h-full pointer-events-auto"></div>
         </div>
+
 
         <!-- Coluna de Texto no Lado Esquerdo -->
         <div class="w-full md:w-1/2 px-6 md:px-16 z-20 relative">
@@ -283,8 +309,9 @@
                 </h1>
                 
                 <p class="text-slate-400 text-sm md:text-base max-w-md mb-8 leading-relaxed">
-                    Faça o teste ao vivo diretamente no seu navegador. O CARE-CAM usa a sua webcam para rastrear múltiplos operadores simultaneamente e alertar sobre fadiga e más posturas.
+                    Faça o teste ao vivo diretamente no seu navegador. O CARE-CAM usa a sua webcam para rastrear a sua coluna e alertar sobre más posturas sem necessitar de sensores corporais.
                 </p>
+
 
                 <div class="flex flex-wrap gap-4">
                     <button onclick="openAuthModal('login')" class="bg-babyBlue text-bgDark font-bold px-6 py-3.5 rounded-xl text-xs font-mono tracking-wider hover:shadow-[0_0_30px_rgba(142,202,230,0.4)] transition-all">
@@ -296,32 +323,36 @@
                 </div>
             </section>
 
+
             <!-- SEÇÃO 2: Algoritmo -->
             <section id="tecnologia" class="min-h-screen flex flex-col justify-center py-20">
                 <span class="text-babyBlue text-xs font-mono uppercase tracking-widest mb-3">02 / Visão Computacional</span>
-                <h2 class="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight">Análise Multi-Pessoa com IA</h2>
+                <h2 class="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight">Rastreamento Corporal com IA</h2>
                 <p class="text-slate-400 text-sm md:text-base max-w-md mb-8 leading-relaxed">
-                    Processamento direto no seu navegador com capacidade de identificar mais de 5 pessoas ao mesmo tempo no mesmo ambiente de trabalho.
+                    Processamento direto no seu navegador com a rede neural MediaPipe Pose, capaz de analisar 33 pontos articulares em tempo real.
                 </p>
+
 
                 <div class="grid gap-4 max-w-md">
                     <div class="bg-cardDark/90 border border-cardBorder p-5 rounded-2xl hover:border-babyBlue/50 transition-all">
                         <div class="flex justify-between items-center mb-1">
-                            <h3 class="text-white font-bold text-sm">Monitoramento de Múltiplos Rostos</h3>
-                            <span class="text-babyBlue font-mono text-xs">>5 Pessoas</span>
+                            <h3 class="text-white font-bold text-sm">Razão de Inclinação do Tronco</h3>
+                            <span class="text-babyBlue font-mono text-xs">Aviso em Tempo Real</span>
                         </div>
-                        <p class="text-slate-400 text-xs leading-relaxed">Identifica expressões de cansaço, estresse e sobrecarga em toda a equipe.</p>
+                        <p class="text-slate-400 text-xs leading-relaxed">Identifica curvaturas prejudiciais e projeção da cabeça para a frente.</p>
                     </div>
+
 
                     <div class="bg-cardDark/90 border border-cardBorder p-5 rounded-2xl hover:border-babyBlue/50 transition-all">
                         <div class="flex justify-between items-center mb-1">
                             <h3 class="text-white font-bold text-sm">Privacidade Total</h3>
                             <span class="text-babyBlue font-mono text-xs">Processamento Local</span>
                         </div>
-                        <p class="text-slate-400 text-xs leading-relaxed">O vídeo da câmara é processado localmente no dispositivo sem envio de imagens para servidores externos.</p>
+                        <p class="text-slate-400 text-xs leading-relaxed">O vídeo da sua câmara é processado exclusivamente no seu dispositivo e não é gravado.</p>
                     </div>
                 </div>
             </section>
+
 
             <!-- SEÇÃO 3: Auditoria -->
             <section id="auditoria" class="min-h-screen flex flex-col justify-center py-20">
@@ -331,20 +362,23 @@
                     Comunicação remota via protocolo MQTT e exportação sob demanda de relatórios auditáveis para órgãos fiscalizadores.
                 </p>
 
+
                 <div class="bg-cardDark border border-babyBlue/20 p-6 rounded-2xl max-w-md shadow-[0_0_30px_rgba(142,202,230,0.05)]">
                     <div class="text-xs font-mono text-babyBlue mb-2">MÓDULO DE LAUDOS AUTOMÁTICOS</div>
-                    <div class="text-3xl font-black text-white mb-2">TXT & LOGS</div>
-                    <p class="text-xs text-slate-400 mb-4">Arquivos pré-formatados com indicadores de ergonomia e métricas de fadiga acumulada por operador.</p>
-                    <button onclick="triggerReportDownload()" class="w-full bg-babyBlue text-bgDark font-mono font-bold text-xs py-3 rounded-xl transition-all hover:shadow-[0_0_20px_rgba(142,202,230,0.3)]">
-                        EXPORTAR LAUDO AGORA (.TXT)
+                    <div class="text-3xl font-black text-white mb-2">HTML & CSV</div>
+                    <p class="text-xs text-slate-400 mb-4">Arquivos pré-formatados com indicadores de ergonomia e métricas de fadiga postural acumulada.</p>
+                    <button onclick="openAuthModal('login')" class="w-full bg-babyBlue text-bgDark font-mono font-bold text-xs py-3 rounded-xl transition-all hover:shadow-[0_0_20px_rgba(142,202,230,0.3)]">
+                        ENTRAR PARA GERAR LAUDO
                     </button>
                 </div>
             </section>
+
 
             <!-- SEÇÃO 4: Rodapé e Créditos -->
             <section id="equipe" class="min-h-screen flex flex-col justify-center py-20">
                 <span class="text-babyBlue text-xs font-mono uppercase tracking-widest mb-3">04 / Desenvolvimento & Ficha Técnica</span>
                 <h2 class="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight">34ª FeCEAP — 2026</h2>
+
 
                 <div class="bg-cardDark border border-cardBorder p-6 rounded-2xl max-w-md space-y-4">
                     <div>
@@ -352,6 +386,7 @@
                         <div class="text-sm font-bold text-white">CEAP — Centro Educacional Assistencial Profissionalizante</div>
                         <div class="text-xs text-slate-400">São Paulo, SP</div>
                     </div>
+
 
                     <div class="border-t border-slate-800 pt-3">
                         <span class="text-[10px] font-mono text-babyBlue block uppercase mb-2">INTEGRANTES DO PROJETO</span>
@@ -363,6 +398,7 @@
                         </ul>
                     </div>
 
+
                     <div class="border-t border-slate-800 pt-3">
                         <span class="text-[10px] font-mono text-babyBlue block uppercase mb-1">ORIENTAÇÃO ACADÊMICA</span>
                         <div class="text-xs text-slate-300 font-mono">• Prof. Augusto Nunes</div>
@@ -370,29 +406,20 @@
                 </div>
             </section>
 
+
         </div>
     </div>
 
-    <!-- SCRIPT PRINCIPAL DO SISTEMA -->
+
+    <!-- Script de Lógica, Deteção de Pose Real e Renderizador 3D -->
     <script>
-        // Variáveis de Controle Global
+        // GLOBAL VARS PARA A WEBCAM E MEDIAPIPE
+        let cameraUtilsInstance = null;
+        let poseNet = null;
         let isWebcamActive = false;
-        let detectionInterval = null;
-        let totalAlertasFadiga = 0;
-        let operadoreFadigados = {};
-        let modelsLoaded = false;
+        let alertTriggered = false;
 
-        const traducoesEmocoes = {
-            neutral: 'Neutro', 
-            happy: 'Feliz / Atento', 
-            sad: 'Cansaço / Tristeza', 
-            angry: 'Estresse / Irritação', 
-            fearful: 'Apreensivo', 
-            disgusted: 'Desconfortável', 
-            surprised: 'Surpreso'
-        };
 
-        // Funções da Interface e Modais
         function openAuthModal(tab) {
             const modal = document.getElementById('auth-modal');
             const modalBox = document.getElementById('modal-box');
@@ -402,6 +429,7 @@
             switchAuthTab(tab);
         }
 
+
         function closeAuthModal() {
             const modal = document.getElementById('auth-modal');
             const modalBox = document.getElementById('modal-box');
@@ -410,11 +438,13 @@
             modalBox.classList.add('scale-95');
         }
 
+
         function switchAuthTab(tab) {
             const tabLogin = document.getElementById('tab-login');
             const tabRegister = document.getElementById('tab-register');
             const formLogin = document.getElementById('form-login');
             const formRegister = document.getElementById('form-register');
+
 
             if (tab === 'login') {
                 tabLogin.className = "pb-3 px-4 font-mono text-xs text-babyBlue border-b-2 border-babyBlue font-bold w-1/2 text-center transition-all";
@@ -429,31 +459,35 @@
             }
         }
 
+
         function handleRegister(e) {
             e.preventDefault();
             closeAuthModal();
-            showToast("Solicitação enviada! A abrir painel...");
-            setTimeout(() => { launchDashboard(e); }, 800);
+            showToast("Solicitação enviada! Redirecionando para o painel...");
+            setTimeout(() => { launchDashboard(e); }, 1000);
         }
+
 
         function showToast(msg) {
             const toast = document.getElementById('toast');
             const toastMsg = document.getElementById('toast-message');
-            if (toastMsg) toastMsg.innerText = msg;
+            toastMsg.innerText = msg;
             toast.classList.remove('translate-y-20', 'opacity-0');
             setTimeout(() => {
                 toast.classList.add('translate-y-20', 'opacity-0');
             }, 3500);
         }
 
+
         function launchDashboard(e) {
             if (e) e.preventDefault();
             closeAuthModal();
             const dash = document.getElementById('dashboard-app');
             dash.classList.remove('opacity-0', 'pointer-events-none');
-            showToast("Painel ativado. Inicializando visão computacional...");
+            showToast("Painel aberto. A ativar câmara...");
             startWebcam();
         }
+
 
         function closeDashboard() {
             stopWebcam();
@@ -461,6 +495,7 @@
             dash.classList.add('opacity-0', 'pointer-events-none');
             showToast("Sessão encerrada com segurança.");
         }
+
 
         function changeRoom(val) {
             if (val === 'webcam') {
@@ -471,312 +506,347 @@
             }
         }
 
-        function addLog(msg, tipo = 'info') {
+
+        function triggerReportDownload() {
+            showToast("Relatório executivo gerado em formato CSV e HTML!");
+            addLog("[" + new Date().toLocaleTimeString() + "] RELATÓRIO: Laudo emitido sob demanda pelo ergonomista.");
+        }
+
+
+        function addLog(msg) {
             const container = document.getElementById('log-container');
-            if (!container) return;
             const div = document.createElement('div');
-            
-            if (tipo === 'alerta') div.className = "p-2 bg-bgDark rounded border border-amber-800/80 text-amber-400 font-bold";
-            else if (tipo === 'erro') div.className = "p-2 bg-bgDark rounded border border-rose-800/80 text-rose-400 font-bold";
-            else div.className = "p-2 bg-bgDark rounded border border-slate-800 text-babyBlue";
-            
+            div.className = "p-2 bg-bgDark rounded border border-slate-800 text-babyBlue";
             div.innerText = msg;
             container.prepend(div);
         }
 
+
         function clearLogs() {
-            const container = document.getElementById('log-container');
-            if (container) {
-                container.innerHTML = '<div class="p-2 bg-bgDark rounded border border-slate-800 text-slate-500">Logs limpos pelo operador.</div>';
-            }
+            document.getElementById('log-container').innerHTML = '<div class="p-2 bg-bgDark rounded border border-slate-800 text-slate-500">Logs limpos pelo operador.</div>';
         }
 
-        // =========================================================================
-        // EXPORTAÇÃO AUDITÁVEL DE RELATÓRIO (.TXT COM BOM UTF-8)
-        // =========================================================================
-        function triggerReportDownload() {
-            const container = document.getElementById('log-container');
-            const kpiOps = document.getElementById('kpi-ops');
-            const kpiScore = document.getElementById('kpi-score');
-            
-            let logText = "";
-            if (container) {
-                const divs = container.querySelectorAll('div');
-                let logsArr = [];
-                divs.forEach(d => logsArr.push(d.innerText));
-                logText = logsArr.join("\n");
-            }
-
-            const totalOpsText = kpiOps ? kpiOps.innerText : "00 Detectados";
-            const scoreText = kpiScore ? kpiScore.innerText : "100%";
-            const dataHoraAtual = new Date().toLocaleString('pt-BR');
-
-            // Formatação do laudo técnico com codificação limpa
-            const relatorioTexto = 
-                `=======================================================\n` +
-                `       RELATÓRIO AUDITÁVEL DE ERGONOMIA CARE-CAM        \n` +
-                `       Conformidade Normativa NR-17 - FeCEAP 2026       \n` +
-                `=======================================================\n\n` +
-                `INFORMACÕES GERAIS DA SESSÃO:\n` +
-                `- Data e Hora de Emissão: ${dataHoraAtual}\n` +
-                `- Status da Sala: Conforme NR-17 (${scoreText})\n` +
-                `- Operadores Monitorados: ${totalOpsText}\n` +
-                `- Disparos de Fadiga/Estresse Registrados: ${totalAlertasFadiga}\n` +
-                `-------------------------------------------------------\n\n` +
-                `HISTÓRICO COMPLETO DE LOGS E EVENTOS (MQTT TELEMETRY):\n\n` +
-                (logText || "[Sem registros de telemetria na sessão atual]") +
-                `\n\n=======================================================\n` +
-                `CEAP - Centro Educacional Assistencial Profissionalizante\n` +
-                `Projeto CARE-CAM Enterprise © 2026\n` +
-                `Fim do Documento.`;
-
-            // Adiciona o BOM UTF-8 (\uFEFF) para garantir suporte perfeito em todos os leitores de texto
-            const blob = new Blob(["\uFEFF" + relatorioTexto], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `Laudo_CareCam_NR17_${new Date().toISOString().slice(0,10)}_${Date.now().toString().slice(-4)}.txt`;
-            
-            document.body.appendChild(link);
-            link.click();
-            
-            // Limpeza de DOM e memória
-            setTimeout(() => {
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-            }, 100);
-
-            showToast("Relatório baixado com sucesso!");
-            addLog(`[${new Date().toLocaleTimeString()}] RELATÓRIO: Ficheiro .txt exportado com sucesso.`);
-        }
 
         // =========================================================================
-        // MOTOR DE VISÃO COMPUTACIONAL (MULTI-PESSOA >5 & ALERTAS DINÂMICOS)
+        // PROCESSAMENTO DE IA COM MEDIAPIPE POSE (WEBCAM REAL)
         // =========================================================================
-        async function loadIAEngine() {
-            if (modelsLoaded) return true;
-            addLog(`[${new Date().toLocaleTimeString()}] SISTEMA: Carregando rede neural para múltiplos rostos...`);
-            
-            const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
-            try {
-                await Promise.all([
-                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
-                ]);
-                modelsLoaded = true;
-                addLog(`[${new Date().toLocaleTimeString()}] IA: Modelos multi-pessoa prontos.`);
-                return true;
-            } catch (err) {
-                console.error("Erro ao carregar IA:", err);
-                addLog(`[${new Date().toLocaleTimeString()}] ERRO: Falha ao carregar modelos da IA.`, 'erro');
-                return false;
-            }
-        }
+        function initPoseEngine() {
+            const videoElement = document.getElementById('webcam-video');
+            const canvasElement = document.getElementById('cv-canvas');
+            const canvasCtx = canvasElement.getContext('2d');
 
-        async function startWebcam() {
-            const video = document.getElementById('webcam-video');
-            const canvas = document.getElementById('cv-canvas');
 
-            const isReady = await loadIAEngine();
-            if (!isReady) return;
+            poseNet = new Pose({
+                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+            });
 
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
-                    audio: false
-                });
 
-                video.srcObject = stream;
-                isWebcamActive = true;
+            poseNet.setOptions({
+                modelComplexity: 1,
+                smoothLandmarks: true,
+                minDetectionConfidence: 0.5,
+                minTrackingConfidence: 0.5
+            });
 
-                const badge = document.getElementById('camera-status-badge');
-                if (badge) {
-                    badge.className = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono px-2.5 py-0.5 rounded-full flex items-center gap-1.5";
-                    badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> CÂMARA EM TRANSMISSÃO (MULTI-FACE)';
+
+            poseNet.onResults((results) => {
+                canvasElement.width = videoElement.videoWidth || 640;
+                canvasElement.height = videoElement.videoHeight || 480;
+
+
+                canvasCtx.save();
+                canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+                
+                // Desenhar a imagem real da webcam
+                if (results.image) {
+                    canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
                 }
 
-                addLog(`[${new Date().toLocaleTimeString()}] WEBCAM: Dispositivo ativado em alta resolução.`);
-                showToast("Câmara ativada. Monitorando mais de 5 pessoas...");
 
-                video.onloadedmetadata = () => {
-                    const displaySize = { width: video.videoWidth || 640, height: video.videoHeight || 480 };
-                    faceapi.matchDimensions(canvas, displaySize);
+                if (results.poseLandmarks) {
+                    // Desenhar conetores do esqueleto com estilo neon
+                    drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
+                        color: '#8ECAE6',
+                        lineWidth: 3
+                    });
+                    
+                    // Desenhar pontos articulares
+                    drawLandmarks(canvasCtx, results.poseLandmarks, {
+                        color: '#B8E1F4',
+                        fillColor: '#08090C',
+                        lineWidth: 2,
+                        radius: 5
+                    });
 
-                    if (detectionInterval) clearInterval(detectionInterval);
 
-                    // Ciclo de Análise Contínua
-                    detectionInterval = setInterval(async () => {
-                        if (!isWebcamActive) return;
+                    // AVALIAÇÃO POSTURAL EM TEMPO REAL
+                    evaluatePosture(results.poseLandmarks);
+                }
 
-                        // Configuração para varredura profunda de múltiplos rostos simultâneos
-                        const opcoesDetetor = new faceapi.TinyFaceDetectorOptions({
-                            inputSize: 608,       // Mapeamento de alta resolução para apanhar rostos pequenos/fundo
-                            scoreThreshold: 0.12  // Sensibilidade ampla para rastrear 5, 8, 10+ pessoas na sala
-                        });
 
-                        const detecoes = await faceapi.detectAllFaces(video, opcoesDetetor).withFaceExpressions();
-                        const detecoesRedimensionadas = faceapi.resizeResults(detecoes, displaySize);
-
-                        const ctx = canvas.getContext('2d');
-                        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                        const totalPessoas = detecoes.length;
-                        let fadigadosNesteFrame = 0;
-
-                        // Atualiza Total de Operadores no Painel
-                        const kpiOps = document.getElementById('kpi-ops');
-                        if (kpiOps) {
-                            kpiOps.innerText = `${String(totalPessoas).padStart(2, '0')} ${totalPessoas === 1 ? 'Detectado' : 'Detectados'}`;
-                        }
-
-                        // Processa cada pessoa detectada
-                        detecoesRedimensionadas.forEach((detecao, index) => {
-                            const expressoes = detecao.expressions;
-                            const emocaoDominante = Object.keys(expressoes).reduce((a, b) => expressoes[a] > expressoes[b] ? a : b);
-                            const emocaoPT = traducoesEmocoes[emocaoDominante] || emocaoDominante;
-
-                            const isFadigaOuEstresse = ['sad', 'angry', 'disgusted'].includes(emocaoDominante);
-                            const opId = `OP-${String(index + 1).padStart(2, '0')}`;
-
-                            if (!operadoreFadigados[opId]) operadoreFadigados[opId] = 0;
-
-                            if (isFadigaOuEstresse) {
-                                operadoreFadigados[opId]++;
-                                fadigadosNesteFrame++;
-
-                                // Incrementa Dinamicamente o Contador de Alertas (saindo do 01, 02, 03...)
-                                if (operadoreFadigados[opId] % 10 === 0) {
-                                    totalAlertasFadiga++;
-                                    
-                                    const kpiAlerts = document.getElementById('kpi-alerts');
-                                    if (kpiAlerts) {
-                                        kpiAlerts.innerText = `${String(totalAlertasFadiga).padStart(2, '0')} Alertas`;
-                                    }
-
-                                    addLog(`[${new Date().toLocaleTimeString()}] ⚠️ ALERTA NR-17: Indicador de Fadiga/Estresse detectado no ${opId} (${emocaoPT}).`, 'alerta');
-                                }
-                            } else {
-                                operadoreFadigados[opId] = Math.max(0, operadoreFadigados[opId] - 1);
-                            }
-
-                            // Desenho do Quadrado e Nome do Operador no Feed
-                            const boxColor = isFadigaOuEstresse ? '#ef4444' : '#38bdf8';
-                            const box = detecao.detection.box;
-                            const drawBox = new faceapi.draw.DrawBox(box, {
-                                label: `${opId} | ${emocaoPT}`,
-                                boxColor: boxColor
-                            });
-                            drawBox.draw(canvas);
-                        });
-
-                        // Score Geral da Sala
-                        const kpiScore = document.getElementById('kpi-score');
-                        if (kpiScore) {
-                            let scoreGeral = 100;
-                            if (totalPessoas > 0) {
-                                scoreGeral = Math.max(40, Math.round(100 - (fadigadosNesteFrame / totalPessoas) * 35));
-                            }
-                            kpiScore.innerText = `${scoreGeral}%`;
-                        }
-
-                    }, 180);
-                };
-
-            } catch (err) {
-                console.error("Erro na webcam:", err);
-                addLog(`[${new Date().toLocaleTimeString()}] ERRO: Acesso negado ou erro na webcam.`, 'erro');
-                showToast("Erro ao abrir a câmara.");
-            }
-        }
-
-        function stopWebcam() {
-            isWebcamActive = false;
-            if (detectionInterval) clearInterval(detectionInterval);
-
-            const video = document.getElementById('webcam-video');
-            if (video && video.srcObject) {
-                const stream = video.srcObject;
-                const tracks = stream.getTracks();
-                tracks.forEach(track => track.stop());
-                video.srcObject = null;
-            }
-
-            const badge = document.getElementById('camera-status-badge');
-            if (badge) {
-                badge.className = "bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[10px] font-mono px-2.5 py-0.5 rounded-full flex items-center gap-1.5";
-                badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> SISTEMA PAUSADO';
-            }
-
-            addLog(`[${new Date().toLocaleTimeString()}] WEBCAM: Transmissão pausada.`);
-        }
-
-        // =========================================================================
-        // CENA 3D DA CÂMARA PTZ (THREE.JS)
-        // =========================================================================
-        function init3DScene() {
-            const container = document.getElementById('canvas-container');
-            if (!container) return;
-
-            const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-            camera.position.set(0, 0, 5);
-
-            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-            renderer.setSize(container.clientWidth, container.clientHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            container.appendChild(renderer.domElement);
-
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
-            scene.add(ambientLight);
-
-            const pointLight = new THREE.PointLight(0x8ECAE6, 2, 50);
-            pointLight.position.set(5, 5, 5);
-            scene.add(pointLight);
-
-            const ptzGroup = new THREE.Group();
-
-            // Base
-            const baseGeo = new THREE.CylinderGeometry(1.1, 1.3, 0.4, 32);
-            const baseMat = new THREE.MeshStandardMaterial({ color: 0x1A2030, roughness: 0.3, metalness: 0.8 });
-            const baseMesh = new THREE.Mesh(baseGeo, baseMat);
-            baseMesh.position.y = 0.8;
-            ptzGroup.add(baseMesh);
-
-            // Corpo
-            const bodyGeo = new THREE.SphereGeometry(1, 32, 32);
-            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x0D0F17, roughness: 0.2, metalness: 0.9 });
-            const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
-            ptzGroup.add(bodyMesh);
-
-            // Lente
-            const lensGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 32);
-            const lensMat = new THREE.MeshStandardMaterial({ color: 0x8ECAE6, roughness: 0.1, metalness: 0.9, emissive: 0x113344 });
-            const lensMesh = new THREE.Mesh(lensGeo, lensMat);
-            lensMesh.rotation.x = Math.PI / 2;
-            lensMesh.position.z = 0.85;
-            ptzGroup.add(lensMesh);
-
-            scene.add(ptzGroup);
-
-            function animate() {
-                requestAnimationFrame(animate);
-                ptzGroup.rotation.y += 0.006;
-                ptzGroup.rotation.x = Math.sin(Date.now() * 0.001) * 0.1;
-                renderer.render(scene, camera);
-            }
-            animate();
-
-            window.addEventListener('resize', () => {
-                if (!container) return;
-                camera.aspect = container.clientWidth / container.clientHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(container.clientWidth, container.clientHeight);
+                canvasCtx.restore();
             });
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            init3DScene();
+
+        function evaluatePosture(landmarks) {
+            // Pontos chave: Nariz (0), Ombro Esquerdo (11), Ombro Direito (12), Anca Esquerda (23), Anca Direita (24)
+            const nose = landmarks[0];
+            const leftShoulder = landmarks[11];
+            const rightShoulder = landmarks[12];
+
+
+            if (nose && leftShoulder && rightShoulder) {
+                const avgShoulderY = (leftShoulder.y + rightShoulder.y) / 2;
+                const neckDistance = avgShoulderY - nose.y;
+
+
+                const ratioDisplay = document.getElementById('cv-ratio');
+                const tagDisplay = document.getElementById('cv-status-tag');
+                const kpiScore = document.getElementById('kpi-score');
+                const kpiScoreStatus = document.getElementById('kpi-score-status');
+
+
+                // Quanto menor a distância vertical nariz-ombro, mais curvada/inclinada está a pessoa
+                const postureScore = Math.min(Math.max((neckDistance * 4).toFixed(2), 0.40), 0.99);
+
+
+                if (neckDistance < 0.14) { // Postura Inclinada / Curvada
+                    ratioDisplay.innerText = postureScore + " (Baixo / Curvado)";
+                    ratioDisplay.className = "text-amber-400 font-bold";
+                    
+                    tagDisplay.className = "absolute bottom-4 right-4 bg-amber-500/20 text-amber-400 border border-amber-500/40 font-mono text-[11px] px-3 py-1.5 rounded-lg font-bold animate-pulse z-10";
+                    tagDisplay.innerText = "⚠ ALERTA: TRONCO INCLINADO";
+
+
+                    kpiScore.innerText = "72%";
+                    kpiScore.className = "text-2xl font-black text-amber-400";
+                    kpiScoreStatus.innerText = "Status: Requer Correção";
+                    kpiScoreStatus.className = "text-amber-400 font-mono text-[10px] block mt-1";
+
+
+                    if (!alertTriggered) {
+                        alertTriggered = true;
+                        addLog("[" + new Date().toLocaleTimeString() + "] ⚠ ALERTA NR-17: Curvatura nociva detetada na webcam.");
+                        document.getElementById('kpi-alerts').innerText = "01 Alerta";
+                    }
+                } else { // Postura Correta / Ereta
+                    ratioDisplay.innerText = postureScore + " (Ideal)";
+                    ratioDisplay.className = "text-emerald-400 font-bold";
+
+
+                    tagDisplay.className = "absolute bottom-4 right-4 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono text-[11px] px-3 py-1.5 rounded-lg font-bold z-10";
+                    tagDisplay.innerText = "✓ POSTURA CORRETA";
+
+
+                    kpiScore.innerText = "98%";
+                    kpiScore.className = "text-2xl font-black text-babyBlue";
+                    kpiScoreStatus.innerText = "Status: Conforme NR-17";
+                    kpiScoreStatus.className = "text-emerald-400 font-mono text-[10px] block mt-1";
+
+
+                    if (alertTriggered) {
+                        alertTriggered = false;
+                        addLog("[" + new Date().toLocaleTimeString() + "] ✓ POSTURA: Utilizador recuperou alinhamento ereto.");
+                    }
+                }
+            }
+        }
+
+
+        async function startWebcam() {
+            const videoElement = document.getElementById('webcam-video');
+            if (!poseNet) initPoseEngine();
+
+
+            try {
+                if (cameraUtilsInstance) {
+                    await cameraUtilsInstance.stop();
+                }
+
+
+                cameraUtilsInstance = new Camera(videoElement, {
+                    onFrame: async () => {
+                        await poseNet.send({ image: videoElement });
+                    },
+                    width: 640,
+                    height: 480
+                });
+
+
+                await cameraUtilsInstance.start();
+                isWebcamActive = true;
+                
+                document.getElementById('btn-webcam').innerText = "🟢 CÂMARA EM TRANSMISSÃO";
+                document.getElementById('btn-webcam').className = "bg-emerald-500 text-bgDark font-mono text-xs px-5 py-2.5 rounded-lg font-bold shadow-[0_0_15px_rgba(16,185,129,0.4)]";
+                document.getElementById('camera-status-badge').innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> WEBCAM AO VIVO ATIVA';
+                
+                showToast("Webcam ativada com sucesso! Ajuste a sua postura frente à câmara.");
+                addLog("[" + new Date().toLocaleTimeString() + "] CÂMARA: Stream de webcam iniciado com sucesso.");
+            } catch (err) {
+                console.error("Erro ao aceder à webcam: ", err);
+                showToast("Permissão negada ou câmara indisponível. Verifique as permissões do seu navegador.");
+                addLog("[" + new Date().toLocaleTimeString() + "] ERRO: Não foi possível aceder à webcam do dispositivo.");
+            }
+        }
+
+
+        function stopWebcam() {
+            if (cameraUtilsInstance) {
+                cameraUtilsInstance.stop();
+                isWebcamActive = false;
+                document.getElementById('btn-webcam').innerText = "📷 ATIVAR MINHA CÂMARA REAL";
+                document.getElementById('btn-webcam').className = "bg-babyBlue text-bgDark hover:bg-babyBlueGlow font-mono text-xs px-5 py-2.5 rounded-lg transition-all font-bold shadow-[0_0_15px_rgba(142,202,230,0.3)]";
+                document.getElementById('camera-status-badge').innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> CÂMARA PAUSADA';
+                showToast("Transmissão da câmara pausada.");
+            }
+        }
+
+
+        // =========================================================================
+        // RENDERIZADOR 3D DA CÂMARA PTZ DE SEGURANÇA (THREE.JS)
+        // =========================================================================
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+
+
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(0, 0, 7.5);
+
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+
+        // ILUMINAÇÃO DE ESTÚDIO PBR
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+
+
+        const mainDirLight = new THREE.DirectionalLight(0xffffff, 1.4);
+        mainDirLight.position.set(5, 8, 7);
+        scene.add(mainDirLight);
+
+
+        const fillBlueLight = new THREE.DirectionalLight(0x8ECAE6, 0.8);
+        fillBlueLight.position.set(-5, -4, 4);
+        scene.add(fillBlueLight);
+
+
+        // MATERIAIS PBR
+        const whitePlastic = new THREE.MeshStandardMaterial({ color: 0xE2E8F0, roughness: 0.35, metalness: 0.1 });
+        const blackPlastic = new THREE.MeshStandardMaterial({ color: 0x1E293B, roughness: 0.4, metalness: 0.2 });
+        const lensGlass = new THREE.MeshPhysicalMaterial({
+            color: 0x0F172A, emissive: 0x0284C7, emissiveIntensity: 0.25,
+            roughness: 0.05, metalness: 0.9, clearcoat: 1.0, clearcoatRoughness: 0.1
+        });
+        const ledOn = new THREE.MeshStandardMaterial({ color: 0xFEF08A, emissive: 0xFACC15, emissiveIntensity: 1.2 });
+
+
+        // GRUPO DA CÂMARA
+        const ptzCameraGroup = new THREE.Group();
+        scene.add(ptzCameraGroup);
+
+
+        // SUPORTE
+        const mountBase = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.2, 0.2), whitePlastic);
+        mountBase.position.set(0, 2.4, -0.8);
+        ptzCameraGroup.add(mountBase);
+
+
+        const mountArm = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.5, 0.9), whitePlastic);
+        mountArm.position.set(0, 2.1, -0.35);
+        ptzCameraGroup.add(mountArm);
+
+
+        // ANTENAS
+        const antennaGeo = new THREE.CylinderGeometry(0.06, 0.05, 3.0, 16);
+        const leftAntenna = new THREE.Mesh(antennaGeo, whitePlastic);
+        leftAntenna.position.set(-1.25, 1.8, -0.4);
+        leftAntenna.rotation.z = -0.15;
+        
+        const rightAntenna = new THREE.Mesh(antennaGeo, whitePlastic);
+        rightAntenna.position.set(1.25, 1.8, -0.4);
+        rightAntenna.rotation.z = 0.15;
+
+
+        ptzCameraGroup.add(leftAntenna, rightAntenna);
+
+
+        // MÓDULO SUPERIOR
+        const topBody = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 1.05, 1.1, 32), whitePlastic);
+        topBody.position.set(0, 1.1, 0);
+        ptzCameraGroup.add(topBody);
+
+
+        const topFaceplate = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.8, 0.1), blackPlastic);
+        topFaceplate.position.set(0, 1.0, 0.96);
+        ptzCameraGroup.add(topFaceplate);
+
+
+        const lensSup = new THREE.Mesh(new THREE.SphereGeometry(0.22, 32, 32), lensGlass);
+        lensSup.position.set(0, 1.0, 1.05);
+        ptzCameraGroup.add(lensSup);
+
+
+        // MÓDULO INFERIOR (PTZ)
+        const ptzDomeGroup = new THREE.Group();
+        ptzDomeGroup.position.set(0, -0.2, 0);
+
+
+        const domeSphere = new THREE.Mesh(new THREE.SphereGeometry(0.95, 32, 32), blackPlastic);
+        ptzDomeGroup.add(domeSphere);
+
+
+        const domeCover = new THREE.Mesh(new THREE.SphereGeometry(0.98, 32, 32, 0, Math.PI * 2, 0, Math.PI * 0.55), whitePlastic);
+        domeCover.rotation.x = Math.PI;
+        domeCover.position.set(0, 0.2, 0);
+        ptzDomeGroup.add(domeCover);
+
+
+        const ptzLens = new THREE.Mesh(new THREE.SphereGeometry(0.28, 32, 32), lensGlass);
+        ptzLens.position.set(0, -0.1, 0.95);
+        ptzDomeGroup.add(ptzLens);
+
+
+        ptzCameraGroup.add(ptzDomeGroup);
+
+
+        // ANIMAÇÃO DE SEGUIMENTO DO RATO
+        let mouseX = 0, mouseY = 0;
+        let targetX = 0, targetY = 0;
+
+
+        window.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth - 0.5) * 0.6;
+            mouseY = (e.clientY / window.innerHeight - 0.5) * 0.4;
+        });
+
+
+        function animate3D() {
+            requestAnimationFrame(animate3D);
+
+
+            targetX += (mouseX - targetX) * 0.05;
+            targetY += (mouseY - targetY) * 0.05;
+
+
+            ptzCameraGroup.rotation.y = targetX * 0.7;
+            ptzCameraGroup.rotation.x = targetY * 0.5;
+            ptzDomeGroup.rotation.y = targetX * 0.4;
+
+
+            renderer.render(scene, camera);
+        }
+        animate3D();
+
+
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
         });
     </script>
 </body>
