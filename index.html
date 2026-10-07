@@ -749,14 +749,15 @@
         animate3D();
 
         window.addEventListener('resize', () => {
-            camera.aspect = container.clientWidth / container.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(container.clientWidth, container.clientHeight);
-        });
-     </script> // Variáveis principais do sistema
-const video = document.getElementById('webcam'); // O ID do teu vídeo no HTML
-const canvas = document.getElementById('output'); // O ID do teu canvas sobre o vídeo
-const btnExportar = document.getElementById('btn-exportar'); // O ID do botão "Exportar Relatório"
+  camera.aspect = container.clientWidth / container.clientHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(container.clientWidth, container.clientHeight);
+});
+
+// Variáveis principais do sistema
+const video = document.getElementById('webcam');
+const canvas = document.getElementById('output');
+const btnExportar = document.getElementById('btn-exportar');
 
 let logSessao = []; // Array que vai guardar os dados para o relatório final
 
